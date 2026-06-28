@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="be">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сняданкі на тыдзень</title>
+  <style>
+    :root {
+      --bg: #faf8f5;
+      --surface: #ffffff;
+      --text: #2c2416;
+      --text-muted: #6b5f4e;
+      --accent: #e07a2f;
+      --accent-soft: #fff3e8;
+      --border: #e8e0d4;
+      --success: #3d8b5f;
+      --shadow: 0 2px 12px rgba(44, 36, 22, 0.08);
+      --radius: 14px;
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: clamp(1.75rem, 5vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .juice-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      margin-top: 1rem;
+    }
+
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 3rem;
+    }
+
+    .day-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.35rem;
+      box-shadow: var(--shadow);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .day-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(44, 36, 22, 0.1);
+    }
+
+    .day-card.restaurant {
+      background: linear-gradient(135deg, #f5f0ff 0%, #fff 100%);
+      border-color: #d4c8f0;
+    }
+
+    .day-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.35rem;
+    }
+
+    .day-card h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .day-card .desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 0.85rem;
+    }
+
+    .day-card ul {
+      list-style: none;
+      font-size: 0.88rem;
+    }
+
+    .day-card li {
+      padding: 0.2rem 0;
+      padding-left: 1.1rem;
+      position: relative;
+    }
+
+    .day-card li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .day-card .juice-note {
+      margin-top: 0.75rem;
+      font-size: 0.82rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Shopping section */
+    .shopping-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      box-shadow: var(--shadow);
+    }
+
+    .shopping-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .shopping-header h2 {
+      font-size: 1.35rem;
+    }
+
+    .shopping-header .progress {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .btn-reset {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .btn-reset:hover {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .category {
+      margin-bottom: 1.5rem;
+    }
+
+    .category:last-child { margin-bottom: 0; }
+
+    .category h3 {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .checklist {
+      list-style: none;
+    }
+
+    .checklist li {
+      margin-bottom: 0.35rem;
+    }
+
+    .checklist label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      cursor: pointer;
+      padding: 0.4rem 0.5rem;
+      border-radius: 8px;
+      transition: background 0.12s;
+    }
+
+    .checklist label:hover {
+      background: var(--bg);
+    }
+
+    .checklist input[type="checkbox"] {
+      width: 1.1rem;
+      height: 1.1rem;
+      margin-top: 0.15rem;
+      accent-color: var(--success);
+      flex-shrink: 0;
+    }
+
+    .checklist .item-text {
+      flex: 1;
+      font-size: 0.95rem;
+      transition: color 0.15s, text-decoration 0.15s;
+    }
+
+    .checklist input:checked + .item-text {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 2.5rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    @media print {
+      body { background: white; }
+      .day-card, .shopping-section {
+        box-shadow: none;
+        break-inside: avoid;
+      }
+      .btn-reset, .progress { display: none !important; }
+      .checklist input[type="checkbox"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 0.9rem;
+        height: 0.9rem;
+        border: 1.5px solid #333;
+        border-radius: 3px;
+      }
+      .checklist input:checked {
+        background: #333;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Сняданкі на тыдзень</h1>
+      <p>Здаровыя і разнастайныя сняданкі для двух чалавек. Кожную раніцу — свежы апельсінавы сок.</p>
+      <span class="juice-badge">🍊 Апельсінавы сок кожную раніцу</span>
+    </header>
+
+    <section class="days-grid" id="menu"></section>
+
+    <section class="shopping-section">
+      <div class="shopping-header">
+        <div>
+          <h2>Спіс пакупак</h2>
+          <p class="progress" id="progress">0 з 0 куплена</p>
+        </div>
+        <button type="button" class="btn-reset" id="resetBtn">Скінуць спіс</button>
+      </div>
+      <div id="shopping"></div>
+    </section>
+
+    <footer>breakfast.siaroza.com</footer>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'breakfast-checklist-v1';
+
+    const menu = [
+      {
+        day: 'Нядзеля',
+        title: 'Шакшука',
+        desc: 'Яйкі ў тушанай памідоравай соўсе з перцам і лукам.',
+        ingredients: [
+          '4 яйкі',
+          '4 памідоры',
+          '1 чырвоны перец',
+          '1 цыбуліна',
+          '2 зубчыкі часнаку',
+          '2 ст. л. аліўкавага алею',
+          '1 ч. л. папрыкі, кумін, соль',
+          '4 кавалкі хлеба (цельназернавы або багет)'
+        ],
+        juice: true
+      },
+      {
+        day: 'Панядзелак',
+        title: 'Аўсянка з ягадамі',
+        desc: 'Цёплая аўсянка з бананам, ягадамі і арэхамі.',
+        ingredients: [
+          '1 склянка аўсяных круп',
+          '2 склянкі малако (або раствор)',
+          '2 бананы',
+          '200 г ягад (свежых або замарожаных)',
+          '4 ст. л. мёду',
+          '4 ст. л. валошковых арэхаў',
+          '1 ч. л. карыцы'
+        ],
+        juice: true
+      },
+      {
+        day: 'Аўторак',
+        title: 'Амлет з гароднінай',
+        desc: 'Пышны амлет з шпінатам, цукіні і сыром.',
+        ingredients: [
+          '6 яек',
+          '100 г шпінату',
+          '1 цукіні',
+          '100 г твёрдага сыру',
+          '2 ст. л. аліўкавага алею',
+          '2 гародніны (пятрушка, кроп)',
+          'соль, перац'
+        ],
+        juice: true
+      },
+      {
+        day: 'Серада',
+        title: 'Сырнікі',
+        desc: 'Нежныя сырнікі з тварагу са смятанай і мёдам.',
+        ingredients: [
+          '500 г тварагу (9%)',
+          '2 яйкі',
+          '4 ст. л. мукі',
+          '2 ст. л. цукру',
+          '1 ч. л. ванілі',
+          '4 ст. л. смятаны',
+          '4 ст. л. мёду',
+          '2 ст. л. аліявога алею (для смажэння)'
+        ],
+        juice: true
+      },
+      {
+        day: 'Чацвер',
+        title: 'Тосты з авакада',
+        desc: 'Хрумясты тост з авакада і яйкам-пашот.',
+        ingredients: [
+          '4 кавалкі цельназернавога хлеба',
+          '2 спелыя авакада',
+          '4 яйкі',
+          '2 ст. л. лімоннага соку',
+          '2 гародніны (кроп, кінза)',
+          'соль, чырвоны перец',
+          '2 ст. л. аліўкавага алею'
+        ],
+        juice: true
+      },
+      {
+        day: 'Пятніца',
+        title: 'Ёгурт з гранолай',
+        desc: 'Грэцкі ёгурт з хрумястай гранолай, садавінай і насеннем.',
+        ingredients: [
+          '400 г грэцкага ёгурту',
+          '200 г гранолы',
+          '2 яблыкі',
+          '2 грушы',
+          '4 ст. л. насення лёну',
+          '4 ст. л. мёду',
+          '100 г вішняў або ягод'
+        ],
+        juice: true
+      },
+      {
+        day: 'Субота',
+        title: 'Рэстарацыя',
+        desc: 'Сняданак або брунч у рэстарацыі — адпачынак ад гатавання!',
+        ingredients: [],
+        restaurant: true,
+        juice: true
+      }
+    ];
+
+    const shoppingList = [
+      {
+        category: 'Садавіна і гародніна',
+        items: [
+          'Апельсіны (7–8 шт. або 1 л соку)',
+          'Памідоры — 4 шт.',
+          'Чырвоны перец — 1 шт.',
+          'Цыбуліна — 1 шт.',
+          'Часнок — 1 галавачка',
+          'Бананы — 2 шт.',
+          'Ягоды — 200 г',
+          'Шпінат — 100 г',
+          'Цукіні — 1 шт.',
+          'Авакада — 2 шт.',
+          'Лімон — 1 шт.',
+          'Яблыкі — 2 шт.',
+          'Грушы — 2 шт.',
+          'Вішні/ягоды — 100 г'
+        ]
+      },
+      {
+        category: 'Малочнае і яйкі',
+        items: [
+          'Яйкі — 2 дзясяткі',
+          'Малако — 1 л',
+          'Твараг 9% — 500 г',
+          'Сыр твёрды — 100 г',
+          'Грэцкі ёгурт — 400 г',
+          'Смятана — 200 г'
+        ]
+      },
+      {
+        category: 'Крупы, хлеб, мука',
+        items: [
+          'Аўсяныя крупы — 1 пачка',
+          'Цельназернавы хлеб — 1 буханка',
+          'Мука — 200 г',
+          'Гранола — 200 г'
+        ]
+      },
+      {
+        category: 'Арэхі і насенне',
+        items: [
+          'Валошковыя арэхі — 100 г',
+          'Насенне лёну — 50 г'
+        ]
+      },
+      {
+        category: 'Іншае',
+        items: [
+          'Аліўкавы алей',
+          'Мёд',
+          'Цукар',
+          'Ваніль',
+          'Папрыка, кумін, карыца',
+          'Соль, перац',
+          'Зеляніна (пятрушка, кроп, кінза)'
+        ]
+      }
+    ];
+
+    function renderMenu() {
+      const container = document.getElementById('menu');
+      container.innerHTML = menu.map(day => {
+        const cardClass = day.restaurant ? 'day-card restaurant' : 'day-card';
+        const ingredientsHtml = day.ingredients.length
+          ? `<ul>${day.ingredients.map(i => `<li>${i}</li>`).join('')}</ul>`
+          : '';
+        const juiceHtml = day.juice
+          ? `<p class="juice-note">+ апельсінавы сок</p>`
+          : '';
+        return `
+          <article class="${cardClass}">
+            <div class="day-label">${day.day}</div>
+            <h2>${day.title}</h2>
+            <p class="desc">${day.desc}</p>
+            ${ingredientsHtml}
+            ${juiceHtml}
+          </article>
+        `;
+      }).join('');
+    }
+
+    function getCheckedState() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      } catch {
+        return {};
+      }
+    }
+
+    function saveCheckedState(state) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function renderShopping() {
+      const container = document.getElementById('shopping');
+      const checked = getCheckedState();
+      let total = 0;
+      let done = 0;
+
+      container.innerHTML = shoppingList.map((cat, catIdx) => {
+        const itemsHtml = cat.items.map((item, itemIdx) => {
+          const id = `item-${catIdx}-${itemIdx}`;
+          total++;
+          if (checked[id]) done++;
+          return `
+            <li>
+              <label>
+                <input type="checkbox" id="${id}" data-id="${id}" ${checked[id] ? 'checked' : ''}>
+                <span class="item-text">${item}</span>
+              </label>
+            </li>
+          `;
+        }).join('');
+        return `
+          <div class="category">
+            <h3>${cat.category}</h3>
+            <ul class="checklist">${itemsHtml}</ul>
+          </div>
+        `;
+      }).join('');
+
+      updateProgress(done, total);
+
+      container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('change', () => {
+          const state = getCheckedState();
+          state[cb.dataset.id] = cb.checked;
+          saveCheckedState(state);
+          const boxes = container.querySelectorAll('input[type="checkbox"]');
+          const checkedCount = [...boxes].filter(b => b.checked).length;
+          updateProgress(checkedCount, boxes.length);
+        });
+      });
+    }
+
+    function updateProgress(done, total) {
+      document.getElementById('progress').textContent =
+        `${done} з ${total} куплена`;
+    }
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      if (confirm('Скінуць усе адзнакі ў спісе пакупак?')) {
+        localStorage.removeItem(STORAGE_KEY);
+        renderShopping();
+      }
+    });
+
+    renderMenu();
+    renderShopping();
+  </script>
+</body>
+</html>
