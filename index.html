@@ -140,6 +140,88 @@
       font-weight: 600;
     }
 
+    .day-card details {
+      margin: -1.25rem -1.35rem;
+    }
+
+    .day-card summary {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 1.25rem 1.35rem;
+      cursor: pointer;
+      list-style: none;
+      user-select: none;
+    }
+
+    .day-card summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .day-card summary::marker {
+      content: "";
+    }
+
+    .day-card .summary-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .day-card summary h2 {
+      margin-bottom: 0;
+    }
+
+    .day-card .chevron {
+      flex-shrink: 0;
+      width: 1.25rem;
+      height: 1.25rem;
+      margin-top: 0.15rem;
+      background: currentColor;
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") center / contain no-repeat;
+      -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") center / contain no-repeat;
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+    }
+
+    .day-card details[open] .chevron {
+      transform: rotate(180deg);
+    }
+
+    .day-card .day-card-body {
+      padding: 0 1.35rem 1.25rem;
+      border-top: 1px solid var(--border);
+      margin-top: 0;
+    }
+
+    .day-card .day-card-body .desc {
+      padding-top: 0.85rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .day-card.today {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      border-left-width: 4px;
+    }
+
+    .day-card.today.restaurant {
+      background: linear-gradient(135deg, #f5f0ff 0%, var(--accent-soft) 100%);
+    }
+
+    .today-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      margin-left: 0.35rem;
+      vertical-align: middle;
+    }
+
     /* Shopping section */
     .shopping-section {
       background: var(--surface);
@@ -254,6 +336,10 @@
         box-shadow: none;
         break-inside: avoid;
       }
+      .day-card details { display: block; }
+      .day-card summary { pointer-events: none; }
+      .day-card .day-card-body { display: block !important; }
+      .chevron { display: none; }
       .btn-reset, .progress { display: none !important; }
       .checklist input[type="checkbox"] {
         -webkit-appearance: none;
@@ -460,10 +546,21 @@
       }
     ];
 
+    function getTodayIndex() {
+      return new Date().getDay();
+    }
+
     function renderMenu() {
       const container = document.getElementById('menu');
-      container.innerHTML = menu.map(day => {
-        const cardClass = day.restaurant ? 'day-card restaurant' : 'day-card';
+      const todayIndex = getTodayIndex();
+      container.innerHTML = menu.map((day, index) => {
+        const isToday = index === todayIndex;
+        const cardClass = [
+          'day-card',
+          day.restaurant ? 'restaurant' : '',
+          isToday ? 'today' : ''
+        ].filter(Boolean).join(' ');
+        const todayBadge = isToday ? '<span class="today-badge">Сёння</span>' : '';
         const ingredientsHtml = day.ingredients.length
           ? `<ul>${day.ingredients.map(i => `<li>${i}</li>`).join('')}</ul>`
           : '';
@@ -472,11 +569,20 @@
           : '';
         return `
           <article class="${cardClass}">
-            <div class="day-label">${day.day}</div>
-            <h2>${day.title}</h2>
-            <p class="desc">${day.desc}</p>
-            ${ingredientsHtml}
-            ${juiceHtml}
+            <details${isToday ? ' open' : ''}>
+              <summary>
+                <div class="summary-text">
+                  <div class="day-label">${day.day}${todayBadge}</div>
+                  <h2>${day.title}</h2>
+                </div>
+                <span class="chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="day-card-body">
+                <p class="desc">${day.desc}</p>
+                ${ingredientsHtml}
+                ${juiceHtml}
+              </div>
+            </details>
           </article>
         `;
       }).join('');
