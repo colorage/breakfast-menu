@@ -323,6 +323,35 @@
       text-decoration: line-through;
     }
 
+    .checklist .item-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.4rem 0.5rem;
+      flex: 1;
+    }
+
+    .interval-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .shopping-note {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+      padding: 0.65rem 0.85rem;
+      background: var(--bg);
+      border-radius: 8px;
+    }
+
     footer {
       text-align: center;
       margin-top: 2.5rem;
@@ -341,6 +370,11 @@
       .day-card .day-card-body { display: block !important; }
       .chevron { display: none; }
       .btn-reset, .progress { display: none !important; }
+      .shopping-note { display: none !important; }
+      .interval-badge {
+        border-color: #999;
+        color: #555;
+      }
       .checklist input[type="checkbox"] {
         -webkit-appearance: none;
         appearance: none;
@@ -373,6 +407,7 @@
         </div>
         <button type="button" class="btn-reset" id="resetBtn">Скінуць спіс</button>
       </div>
+      <p class="shopping-note">Прадметы з пазнакай не патрабуюць штотыднёвай пакупкі.</p>
       <div id="shopping"></div>
     </section>
 
@@ -381,6 +416,17 @@
 
   <script>
     const STORAGE_KEY = 'breakfast-checklist-v1';
+
+    const PURCHASE_INTERVALS = {
+      weekly: { label: null },
+      biweekly: { label: 'раз у 2 тыдні' },
+      monthly: { label: 'раз у месяц' },
+      yearly: { label: 'раз у год' }
+    };
+
+    function item(name, interval = 'weekly') {
+      return { name, interval };
+    }
 
     const menu = [
       {
@@ -489,59 +535,59 @@
       {
         category: 'Садавіна і гародніна',
         items: [
-          'Апельсіны (7–8 шт. або 1 л соку)',
-          'Памідоры — 4 шт.',
-          'Чырвоны перец — 1 шт.',
-          'Цыбуліна — 1 шт.',
-          'Часнок — 1 галавачка',
-          'Бананы — 2 шт.',
-          'Ягоды — 200 г',
-          'Шпінат — 100 г',
-          'Цукіні — 1 шт.',
-          'Авакада — 2 шт.',
-          'Лімон — 1 шт.',
-          'Яблыкі — 2 шт.',
-          'Грушы — 2 шт.',
-          'Вішні/ягоды — 100 г'
+          item('Апельсіны (7–8 шт. або 1 л соку)'),
+          item('Памідоры — 4 шт.'),
+          item('Чырвоны перец — 1 шт.'),
+          item('Цыбуліна — 1 шт.'),
+          item('Часнок — 1 галавачка', 'biweekly'),
+          item('Бананы — 2 шт.'),
+          item('Ягоды — 200 г'),
+          item('Шпінат — 100 г'),
+          item('Цукіні — 1 шт.'),
+          item('Авакада — 2 шт.'),
+          item('Лімон — 1 шт.'),
+          item('Яблыкі — 2 шт.'),
+          item('Грушы — 2 шт.'),
+          item('Вішні/ягоды — 100 г')
         ]
       },
       {
         category: 'Малочнае і яйкі',
         items: [
-          'Яйкі — 2 дзясяткі',
-          'Малако — 1 л',
-          'Твараг 9% — 500 г',
-          'Сыр твёрды — 100 г',
-          'Грэцкі ёгурт — 400 г',
-          'Смятана — 200 г'
+          item('Яйкі — 2 дзясяткі'),
+          item('Малако — 1 л'),
+          item('Твараг 9% — 500 г'),
+          item('Сыр твёрды — 100 г'),
+          item('Грэцкі ёгурт — 400 г'),
+          item('Смятана — 200 г')
         ]
       },
       {
         category: 'Крупы, хлеб, мука',
         items: [
-          'Аўсяныя крупы — 1 пачка',
-          'Цельназернавы хлеб — 1 буханка',
-          'Мука — 200 г',
-          'Гранола — 200 г'
+          item('Аўсяныя крупы — 1 пачка'),
+          item('Цельназернавы хлеб — 1 буханка'),
+          item('Мука — 200 г', 'monthly'),
+          item('Гранола — 200 г', 'biweekly')
         ]
       },
       {
         category: 'Арэхі і насенне',
         items: [
-          'Валошковыя арэхі — 100 г',
-          'Насенне лёну — 50 г'
+          item('Валошковыя арэхі — 100 г', 'biweekly'),
+          item('Насенне лёну — 50 г', 'biweekly')
         ]
       },
       {
         category: 'Іншае',
         items: [
-          'Аліўкавы алей',
-          'Мёд',
-          'Цукар',
-          'Ваніль',
-          'Папрыка, кумін, карыца',
-          'Соль, перац',
-          'Зеляніна (пятрушка, кроп, кінза)'
+          item('Аліўкавы алей', 'monthly'),
+          item('Мёд', 'monthly'),
+          item('Цукар', 'monthly'),
+          item('Ваніль', 'yearly'),
+          item('Папрыка, кумін, карыца', 'yearly'),
+          item('Соль, перац', 'yearly'),
+          item('Зеляніна (пятрушка, кроп, кінза)')
         ]
       }
     ];
@@ -607,15 +653,22 @@
       let done = 0;
 
       container.innerHTML = shoppingList.map((cat, catIdx) => {
-        const itemsHtml = cat.items.map((item, itemIdx) => {
+        const itemsHtml = cat.items.map((shoppingItem, itemIdx) => {
           const id = `item-${catIdx}-${itemIdx}`;
           total++;
           if (checked[id]) done++;
+          const intervalInfo = PURCHASE_INTERVALS[shoppingItem.interval];
+          const badgeHtml = intervalInfo?.label
+            ? `<span class="interval-badge" title="Не патрабуе штотыднёвай пакупкі">${intervalInfo.label}</span>`
+            : '';
           return `
             <li>
               <label>
                 <input type="checkbox" id="${id}" data-id="${id}" ${checked[id] ? 'checked' : ''}>
-                <span class="item-text">${item}</span>
+                <span class="item-row">
+                  <span class="item-text">${shoppingItem.name}</span>
+                  ${badgeHtml}
+                </span>
               </label>
             </li>
           `;
