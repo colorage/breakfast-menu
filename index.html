@@ -327,9 +327,31 @@
       transition: color 0.15s, text-decoration 0.15s;
     }
 
-    .checklist input:checked + .item-text {
+    .checklist input:checked + .item-row .item-text {
       color: var(--text-muted);
       text-decoration: line-through;
+    }
+
+    .checklist li.pending-removal {
+      opacity: 0.75;
+      transition: opacity 0.2s;
+    }
+
+    .btn-undo {
+      display: block;
+      margin: 0 0 0.2rem 2.5rem;
+      padding: 0;
+      border: none;
+      background: none;
+      font: inherit;
+      font-size: 0.8rem;
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .btn-undo:hover {
+      color: var(--text);
     }
 
     .checklist .item-row {
@@ -450,6 +472,7 @@
 
   <script>
     const STORAGE_KEY = 'breakfast-checklist-v1';
+    const pendingRemovals = new Map();
 
     const PURCHASE_INTERVALS = {
       weekly: { label: null },
@@ -679,17 +702,72 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
+    function getTotalItemCount() {
+      return shoppingList.reduce((sum, cat) => sum + cat.items.length, 0);
+    }
+
+    function getDoneCount() {
+      const state = getCheckedState();
+      return Object.values(state).filter(Boolean).length;
+    }
+
+    function updateProgress() {
+      document.getElementById('progress').textContent =
+        `${getDoneCount()} з ${getTotalItemCount()} куплена`;
+    }
+
+    function clearPendingRemovals() {
+      for (const timeoutId of pendingRemovals.values()) {
+        clearTimeout(timeoutId);
+      }
+      pendingRemovals.clear();
+    }
+
+    function cancelPendingRemoval(id) {
+      const timeoutId = pendingRemovals.get(id);
+      if (timeoutId != null) {
+        clearTimeout(timeoutId);
+        pendingRemovals.delete(id);
+      }
+    }
+
+    function removeItemFromDom(li, id) {
+      const ul = li.parentElement;
+      li.remove();
+      if (ul && !ul.children.length) {
+        ul.closest('.category')?.remove();
+      }
+      pendingRemovals.delete(id);
+      updateProgress();
+    }
+
+    function scheduleItemRemoval(li, id) {
+      cancelPendingRemoval(id);
+      const timeoutId = setTimeout(() => {
+        removeItemFromDom(li, id);
+      }, 2000);
+      pendingRemovals.set(id, timeoutId);
+    }
+
+    function undoItemRemoval(li, id, cb) {
+      cancelPendingRemoval(id);
+      li.classList.remove('pending-removal');
+      li.querySelector('.btn-undo')?.remove();
+      cb.checked = false;
+      const state = getCheckedState();
+      state[id] = false;
+      saveCheckedState(state);
+      updateProgress();
+    }
+
     function renderShopping() {
       const container = document.getElementById('shopping');
       const checked = getCheckedState();
-      let total = 0;
-      let done = 0;
 
       container.innerHTML = shoppingList.map((cat, catIdx) => {
         const itemsHtml = cat.items.map((shoppingItem, itemIdx) => {
           const id = `item-${catIdx}-${itemIdx}`;
-          total++;
-          if (checked[id]) done++;
+          if (checked[id]) return '';
           const intervalInfo = PURCHASE_INTERVALS[shoppingItem.interval];
           const badgeHtml = intervalInfo?.label
             ? `<span class="interval-badge" title="Не патрабуе штотыднёвай пакупкі">${intervalInfo.label}</span>`
@@ -697,7 +775,7 @@
           return `
             <li>
               <label>
-                <input type="checkbox" id="${id}" data-id="${id}" ${checked[id] ? 'checked' : ''}>
+                <input type="checkbox" id="${id}" data-id="${id}">
                 <span class="item-row">
                   <span class="item-text">${shoppingItem.name}</span>
                   ${badgeHtml}
@@ -706,6 +784,7 @@
             </li>
           `;
         }).join('');
+        if (!itemsHtml.trim()) return '';
         return `
           <div class="category">
             <h3>${cat.category}</h3>
@@ -714,27 +793,43 @@
         `;
       }).join('');
 
-      updateProgress(done, total);
+      updateProgress();
 
       container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
         cb.addEventListener('change', () => {
-          const state = getCheckedState();
-          state[cb.dataset.id] = cb.checked;
-          saveCheckedState(state);
-          const boxes = container.querySelectorAll('input[type="checkbox"]');
-          const checkedCount = [...boxes].filter(b => b.checked).length;
-          updateProgress(checkedCount, boxes.length);
+          const id = cb.dataset.id;
+          const li = cb.closest('li');
+
+          if (cb.checked) {
+            const state = getCheckedState();
+            state[id] = true;
+            saveCheckedState(state);
+            li.classList.add('pending-removal');
+
+            if (!li.querySelector('.btn-undo')) {
+              const undoBtn = document.createElement('button');
+              undoBtn.type = 'button';
+              undoBtn.className = 'btn-undo';
+              undoBtn.textContent = 'Скасаваць';
+              undoBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                undoItemRemoval(li, id, cb);
+              });
+              li.appendChild(undoBtn);
+            }
+
+            scheduleItemRemoval(li, id);
+            updateProgress();
+          } else {
+            undoItemRemoval(li, id, cb);
+          }
         });
       });
     }
 
-    function updateProgress(done, total) {
-      document.getElementById('progress').textContent =
-        `${done} з ${total} куплена`;
-    }
-
     document.getElementById('resetBtn').addEventListener('click', () => {
       if (confirm('Скінуць усе адзнакі ў спісе пакупак?')) {
+        clearPendingRemovals();
         localStorage.removeItem(STORAGE_KEY);
         renderShopping();
       }
