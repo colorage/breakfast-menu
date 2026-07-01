@@ -79,29 +79,24 @@
       margin-top: 1rem;
     }
 
-    .days-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .day-card {
+    .menu-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.25rem 1.35rem;
       box-shadow: var(--shadow);
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      overflow: hidden;
     }
 
-    .day-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(44, 36, 22, 0.1);
+    .day-item {
+      border-bottom: 1px solid var(--border);
     }
 
-    .day-card.restaurant {
+    .day-item:last-child {
+      border-bottom: none;
+    }
+
+    .day-item.restaurant .day-card-body {
       background: linear-gradient(135deg, #f5f0ff 0%, #fff 100%);
-      border-color: #d4c8f0;
     }
 
     .day-label {
@@ -113,30 +108,30 @@
       margin-bottom: 0.35rem;
     }
 
-    .day-card h2 {
+    .day-item h2 {
       font-size: 1.15rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
     }
 
-    .day-card .desc {
+    .day-item .desc {
       font-size: 0.9rem;
       color: var(--text-muted);
       margin-bottom: 0.85rem;
     }
 
-    .day-card ul {
+    .day-item ul {
       list-style: none;
       font-size: 0.88rem;
     }
 
-    .day-card li {
+    .day-item li {
       padding: 0.2rem 0;
       padding-left: 1.1rem;
       position: relative;
     }
 
-    .day-card li::before {
+    .day-item li::before {
       content: "•";
       position: absolute;
       left: 0;
@@ -144,18 +139,18 @@
       font-weight: bold;
     }
 
-    .day-card .juice-note {
+    .day-item .juice-note {
       margin-top: 0.75rem;
       font-size: 0.82rem;
       color: var(--accent);
       font-weight: 600;
     }
 
-    .day-card details {
-      margin: -1.25rem -1.35rem;
+    .day-item details {
+      margin: 0;
     }
 
-    .day-card summary {
+    .day-item summary {
       display: flex;
       align-items: flex-start;
       gap: 0.75rem;
@@ -165,24 +160,24 @@
       user-select: none;
     }
 
-    .day-card summary::-webkit-details-marker {
+    .day-item summary::-webkit-details-marker {
       display: none;
     }
 
-    .day-card summary::marker {
+    .day-item summary::marker {
       content: "";
     }
 
-    .day-card .summary-text {
+    .day-item .summary-text {
       flex: 1;
       min-width: 0;
     }
 
-    .day-card summary h2 {
+    .day-item summary h2 {
       margin-bottom: 0;
     }
 
-    .day-card .chevron {
+    .day-item .chevron {
       flex-shrink: 0;
       width: 1.25rem;
       height: 1.25rem;
@@ -194,28 +189,27 @@
       transition: transform 0.2s ease;
     }
 
-    .day-card details[open] .chevron {
+    .day-item details[open] .chevron {
       transform: rotate(180deg);
     }
 
-    .day-card .day-card-body {
+    .day-item .day-card-body {
       padding: 0 1.35rem 1.25rem;
       border-top: 1px solid var(--border);
       margin-top: 0;
     }
 
-    .day-card .day-card-body .desc {
+    .day-item .day-card-body .desc {
       padding-top: 0.85rem;
       margin-bottom: 0.85rem;
     }
 
-    .day-card.today {
+    .day-item.today summary {
       background: var(--accent-soft);
-      border-color: var(--accent);
-      border-left-width: 4px;
+      border-left: 4px solid var(--accent);
     }
 
-    .day-card.today.restaurant {
+    .day-item.today.restaurant summary {
       background: linear-gradient(135deg, #f5f0ff 0%, var(--accent-soft) 100%);
     }
 
@@ -396,13 +390,13 @@
         max-height: none;
         overflow-y: visible;
       }
-      .day-card, .shopping-section {
+      .menu-card, .shopping-section {
         box-shadow: none;
         break-inside: avoid;
       }
-      .day-card details { display: block; }
-      .day-card summary { pointer-events: none; }
-      .day-card .day-card-body { display: block !important; }
+      .day-item details { display: block; }
+      .day-item summary { pointer-events: none; }
+      .day-item .day-card-body { display: block !important; }
       .chevron { display: none; }
       .btn-reset, .progress { display: none !important; }
       .shopping-note { display: none !important; }
@@ -428,8 +422,8 @@
   <div class="container">
     <header>
       <h1>Сняданкі на тыдзень</h1>
-      <p>Здаровыя і разнастайныя сняданкі для двух чалавек. Кожную раніцу — свежы апельсінавы сок.</p>
-      <span class="juice-badge">🍊 Апельсінавы сок кожную раніцу</span>
+      <p>Здаровыя і разнастайныя сняданкі для двух чалавек. Кожную раніцу (акрамя суботы) — апельсінавы сок з бутэлек, па 200 мл на чалавека.</p>
+      <span class="juice-badge">🍊 Сок з бутэлек — 400 мл на дзень</span>
     </header>
 
     <div class="main-layout">
@@ -487,11 +481,10 @@
       {
         day: 'Аўторак',
         title: 'Амлет з гароднінай',
-        desc: 'Пышны амлет з шпінатам, цукіні і сыром.',
+        desc: 'Пышны амлет з шпінатам і сыром.',
         ingredients: [
           '6 яек',
           '100 г шпінату',
-          '1 цукіні',
           '100 г твёрдага сыру',
           '2 ст. л. аліўкавага алею',
           '2 гародніны (пятрушка, кроп)',
@@ -551,7 +544,7 @@
         desc: 'Сняданак або брунч у рэстарацыі — адпачынак ад гатавання!',
         ingredients: [],
         restaurant: true,
-        juice: true
+        juice: false
       },
       {
         day: 'Нядзеля',
@@ -575,7 +568,7 @@
       {
         category: 'Садавіна і гародніна',
         items: [
-          item('Апельсіны (7–8 шт. або 1 л соку)'),
+          item('Апельсінавы сок — 2,4 л (3 бутэлек па 1 л)'),
           item('Памідоры — 4 шт.'),
           item('Чырвоны перец — 1 шт.'),
           item('Цыбуліна — 1 шт.'),
@@ -583,7 +576,6 @@
           item('Бананы — 2 шт.'),
           item('Ягоды — 200 г'),
           item('Шпінат — 100 г'),
-          item('Цукіні — 1 шт.'),
           item('Авакада — 2 шт.'),
           item('Лімон — 1 шт.'),
           item('Яблыкі — 2 шт.'),
@@ -639,10 +631,10 @@
     function renderMenu() {
       const container = document.getElementById('menu');
       const todayIndex = getTodayIndex();
-      container.innerHTML = menu.map((day, index) => {
+      const daysHtml = menu.map((day, index) => {
         const isToday = index === todayIndex;
-        const cardClass = [
-          'day-card',
+        const itemClass = [
+          'day-item',
           day.restaurant ? 'restaurant' : '',
           isToday ? 'today' : ''
         ].filter(Boolean).join(' ');
@@ -651,10 +643,10 @@
           ? `<ul>${day.ingredients.map(i => `<li>${i}</li>`).join('')}</ul>`
           : '';
         const juiceHtml = day.juice
-          ? `<p class="juice-note">+ апельсінавы сок</p>`
+          ? `<p class="juice-note">+ апельсінавы сок (400 мл — па 200 мл на чалавека)</p>`
           : '';
         return `
-          <article class="${cardClass}">
+          <div class="${itemClass}">
             <details${isToday ? ' open' : ''}>
               <summary>
                 <div class="summary-text">
@@ -669,9 +661,10 @@
                 ${juiceHtml}
               </div>
             </details>
-          </article>
+          </div>
         `;
       }).join('');
+      container.innerHTML = `<article class="menu-card">${daysHtml}</article>`;
     }
 
     function getCheckedState() {
