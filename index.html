@@ -297,6 +297,17 @@
 
     .checklist li {
       margin-bottom: 0.35rem;
+      overflow: hidden;
+      transition: height 0.25s ease, opacity 0.2s ease, margin-bottom 0.25s ease;
+    }
+
+    .checklist li.collapsing {
+      opacity: 0;
+      margin-bottom: 0 !important;
+    }
+
+    .checklist li.expanding {
+      opacity: 0;
     }
 
     .checklist label {
@@ -330,28 +341,6 @@
     .checklist input:checked + .item-row .item-text {
       color: var(--text-muted);
       text-decoration: line-through;
-    }
-
-    .checklist li.pending-removal {
-      opacity: 0.75;
-      transition: opacity 0.2s;
-    }
-
-    .btn-undo {
-      display: block;
-      margin: 0 0 0.2rem 2.5rem;
-      padding: 0;
-      border: none;
-      background: none;
-      font: inherit;
-      font-size: 0.8rem;
-      color: var(--accent);
-      cursor: pointer;
-      text-decoration: underline;
-    }
-
-    .btn-undo:hover {
-      color: var(--text);
     }
 
     .checklist .item-row {
@@ -390,6 +379,57 @@
       color: var(--text-muted);
     }
 
+    .undo-snackbar {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(0.75rem);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 1rem 0.75rem 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      font-size: 0.9rem;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .undo-snackbar[hidden] {
+      display: none;
+    }
+
+    .undo-snackbar.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .undo-snackbar-text {
+      color: var(--text);
+    }
+
+    .undo-snackbar-action {
+      flex-shrink: 0;
+      padding: 0.35rem 0.75rem;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .undo-snackbar-action:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
     @media (max-width: 768px) {
       .main-layout {
         grid-template-columns: 1fr;
@@ -422,6 +462,7 @@
       .chevron { display: none; }
       .btn-reset, .progress { display: none !important; }
       .shopping-note { display: none !important; }
+      .undo-snackbar { display: none !important; }
       .interval-badge {
         border-color: #999;
         color: #555;
@@ -470,9 +511,19 @@
     <footer>breakfast.siaroza.com</footer>
   </div>
 
+  <div id="undoSnackbar" class="undo-snackbar" hidden aria-live="polite">
+    <span class="undo-snackbar-text"></span>
+    <button type="button" class="undo-snackbar-action">Скасаваць</button>
+  </div>
+
   <script>
     const STORAGE_KEY = 'breakfast-checklist-v1';
-    const pendingRemovals = new Map();
+    const undoStack = [];
+    let snackbarHideTimer = null;
+    const SNACKBAR_DURATION = 2000;
+
+    const undoSnackbar = document.getElementById('undoSnackbar');
+    const undoSnackbarText = undoSnackbar.querySelector('.undo-snackbar-text');
 
     const PURCHASE_INTERVALS = {
       weekly: { label: null },
@@ -716,48 +767,166 @@
         `${getDoneCount()} з ${getTotalItemCount()} куплена`;
     }
 
-    function clearPendingRemovals() {
-      for (const timeoutId of pendingRemovals.values()) {
-        clearTimeout(timeoutId);
-      }
-      pendingRemovals.clear();
+    function getRemovalMessage(count) {
+      if (count === 1) return '1 прадмет выдалены';
+      if (count >= 2 && count <= 4) return `${count} прадметы выдалены`;
+      return `${count} прадметаў выдалена`;
     }
 
-    function cancelPendingRemoval(id) {
-      const timeoutId = pendingRemovals.get(id);
-      if (timeoutId != null) {
-        clearTimeout(timeoutId);
-        pendingRemovals.delete(id);
-      }
+    function dismissSnackbar() {
+      undoSnackbar.classList.remove('visible');
+      const onEnd = () => {
+        if (!undoSnackbar.classList.contains('visible')) {
+          undoSnackbar.hidden = true;
+        }
+      };
+      undoSnackbar.addEventListener('transitionend', onEnd, { once: true });
     }
 
-    function removeItemFromDom(li, id) {
-      const ul = li.parentElement;
-      li.remove();
+    function resetSnackbarTimer() {
+      clearTimeout(snackbarHideTimer);
+      snackbarHideTimer = setTimeout(finalizeUndoStack, SNACKBAR_DURATION);
+    }
+
+    function showSnackbar(count) {
+      undoSnackbarText.textContent = getRemovalMessage(count);
+      undoSnackbar.hidden = false;
+      requestAnimationFrame(() => undoSnackbar.classList.add('visible'));
+      resetSnackbarTimer();
+    }
+
+    function hideSnackbar() {
+      clearTimeout(snackbarHideTimer);
+      snackbarHideTimer = null;
+      undoStack.length = 0;
+      dismissSnackbar();
+    }
+
+    function finalizeUndoStack() {
+      undoStack.length = 0;
+      snackbarHideTimer = null;
+      dismissSnackbar();
+    }
+
+    function pushUndoEntry(entry) {
+      undoStack.push(entry);
+      showSnackbar(undoStack.length);
+    }
+
+    function animateCollapse(li, onDone) {
+      const height = li.scrollHeight;
+      li.style.height = `${height}px`;
+      li.style.overflow = 'hidden';
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          li.classList.add('collapsing');
+          li.style.height = '0';
+        });
+      });
+
+      const onEnd = (e) => {
+        if (e.propertyName !== 'height') return;
+        li.removeEventListener('transitionend', onEnd);
+        li.classList.remove('collapsing');
+        li.style.height = '';
+        li.style.overflow = '';
+        onDone();
+      };
+      li.addEventListener('transitionend', onEnd);
+    }
+
+    function animateExpand(li) {
+      li.classList.add('expanding');
+      li.style.height = '0';
+      li.style.overflow = 'hidden';
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          li.classList.remove('expanding');
+          li.style.height = `${li.scrollHeight}px`;
+        });
+      });
+
+      const onEnd = (e) => {
+        if (e.propertyName !== 'height') return;
+        li.removeEventListener('transitionend', onEnd);
+        li.style.height = '';
+        li.style.overflow = '';
+      };
+      li.addEventListener('transitionend', onEnd);
+    }
+
+    function ensureCategory(catIdx) {
+      const container = document.getElementById('shopping');
+      let categoryEl = container.querySelector(`[data-cat-idx="${catIdx}"]`);
+
+      if (!categoryEl) {
+        const cat = shoppingList[catIdx];
+        categoryEl = document.createElement('div');
+        categoryEl.className = 'category';
+        categoryEl.dataset.catIdx = String(catIdx);
+        categoryEl.innerHTML = `<h3>${cat.category}</h3><ul class="checklist"></ul>`;
+
+        const existingCategories = [...container.querySelectorAll('.category')];
+        const nextCat = existingCategories.find(
+          (el) => Number(el.dataset.catIdx) > catIdx
+        );
+        if (nextCat) {
+          container.insertBefore(categoryEl, nextCat);
+        } else {
+          container.appendChild(categoryEl);
+        }
+      }
+
+      return categoryEl.querySelector('.checklist');
+    }
+
+    function insertLiAtPosition(li, catIdx, itemIdx) {
+      const ul = ensureCategory(catIdx);
+      const cat = shoppingList[catIdx];
+
+      for (let i = itemIdx + 1; i < cat.items.length; i++) {
+        const nextId = `item-${catIdx}-${i}`;
+        const nextLi = ul.querySelector(`[data-id="${nextId}"]`)?.closest('li');
+        if (nextLi) {
+          ul.insertBefore(li, nextLi);
+          return;
+        }
+      }
+
+      ul.appendChild(li);
+    }
+
+    function maybeRemoveEmptyCategory(ul) {
       if (ul && !ul.children.length) {
         ul.closest('.category')?.remove();
       }
-      pendingRemovals.delete(id);
-      updateProgress();
     }
 
-    function scheduleItemRemoval(li, id) {
-      cancelPendingRemoval(id);
-      const timeoutId = setTimeout(() => {
-        removeItemFromDom(li, id);
-      }, 2000);
-      pendingRemovals.set(id, timeoutId);
-    }
+    function undoLastRemoval() {
+      const entry = undoStack.pop();
+      if (!entry) return;
 
-    function undoItemRemoval(li, id, cb) {
-      cancelPendingRemoval(id);
-      li.classList.remove('pending-removal');
-      li.querySelector('.btn-undo')?.remove();
-      cb.checked = false;
+      const { id, li, checkbox, catIdx, itemIdx } = entry;
+
+      checkbox.checked = false;
+      checkbox.disabled = false;
       const state = getCheckedState();
       state[id] = false;
       saveCheckedState(state);
+
+      insertLiAtPosition(li, catIdx, itemIdx);
+      animateExpand(li);
       updateProgress();
+
+      if (undoStack.length > 0) {
+        undoSnackbarText.textContent = getRemovalMessage(undoStack.length);
+      } else {
+        clearTimeout(snackbarHideTimer);
+        snackbarHideTimer = null;
+        dismissSnackbar();
+      }
     }
 
     function renderShopping() {
@@ -786,7 +955,7 @@
         }).join('');
         if (!itemsHtml.trim()) return '';
         return `
-          <div class="category">
+          <div class="category" data-cat-idx="${catIdx}">
             <h3>${cat.category}</h3>
             <ul class="checklist">${itemsHtml}</ul>
           </div>
@@ -797,39 +966,38 @@
 
       container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
         cb.addEventListener('change', () => {
+          if (!cb.checked) return;
+
           const id = cb.dataset.id;
           const li = cb.closest('li');
+          const ul = li.parentElement;
+          const match = id.match(/^item-(\d+)-(\d+)$/);
+          if (!match) return;
 
-          if (cb.checked) {
-            const state = getCheckedState();
-            state[id] = true;
-            saveCheckedState(state);
-            li.classList.add('pending-removal');
+          const catIdx = Number(match[1]);
+          const itemIdx = Number(match[2]);
 
-            if (!li.querySelector('.btn-undo')) {
-              const undoBtn = document.createElement('button');
-              undoBtn.type = 'button';
-              undoBtn.className = 'btn-undo';
-              undoBtn.textContent = 'Скасаваць';
-              undoBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                undoItemRemoval(li, id, cb);
-              });
-              li.appendChild(undoBtn);
-            }
+          const state = getCheckedState();
+          state[id] = true;
+          saveCheckedState(state);
+          cb.disabled = true;
+          updateProgress();
 
-            scheduleItemRemoval(li, id);
+          animateCollapse(li, () => {
+            li.remove();
+            maybeRemoveEmptyCategory(ul);
+            pushUndoEntry({ id, li, checkbox: cb, catIdx, itemIdx });
             updateProgress();
-          } else {
-            undoItemRemoval(li, id, cb);
-          }
+          });
         });
       });
     }
 
+    undoSnackbar.querySelector('.undo-snackbar-action').addEventListener('click', undoLastRemoval);
+
     document.getElementById('resetBtn').addEventListener('click', () => {
       if (confirm('Скінуць усе адзнакі ў спісе пакупак?')) {
-        clearPendingRemovals();
+        hideSnackbar();
         localStorage.removeItem(STORAGE_KEY);
         renderShopping();
       }
