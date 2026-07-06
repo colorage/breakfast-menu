@@ -430,6 +430,62 @@
       color: #fff;
     }
 
+    .emoji-burst-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      overflow: hidden;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .emoji-particle {
+        position: absolute;
+        font-size: 1.5rem;
+        line-height: 1;
+        will-change: transform, opacity;
+        transform: translate(-50%, -50%);
+      }
+
+      @keyframes emojiPopDrop {
+        0% {
+          transform: translate(-50%, -50%) scale(0);
+          opacity: 1;
+        }
+        15% {
+          transform: translate(calc(-50% + var(--drift, 0px)), calc(-50% - 8px)) scale(1.3);
+          opacity: 1;
+        }
+        35% {
+          transform: translate(calc(-50% + var(--drift, 0px)), calc(-50% - 50px)) scale(1.1);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(calc(-50% + var(--drift, 0px)), calc(-50% + 120px)) rotate(var(--spin, 20deg)) scale(0.8);
+          opacity: 0;
+        }
+      }
+
+      @keyframes emojiFlyUp {
+        0% {
+          transform: translate(-50%, calc(-50% + 80px)) scale(0.9);
+          opacity: 0.8;
+        }
+        100% {
+          transform: translate(calc(-50% + var(--drift, 0px)), calc(-50% - 100px)) rotate(var(--spin, -15deg)) scale(1.1);
+          opacity: 0;
+        }
+      }
+
+      .emoji-particle.pop-drop {
+        animation: emojiPopDrop 0.7s ease-out var(--delay, 0s) forwards;
+      }
+
+      .emoji-particle.fly-up {
+        animation: emojiFlyUp 0.5s ease-in var(--delay, 0s) forwards;
+      }
+    }
+
     @media (max-width: 768px) {
       .main-layout {
         grid-template-columns: 1fr;
@@ -516,6 +572,8 @@
     <button type="button" class="undo-snackbar-action">Скасаваць</button>
   </div>
 
+  <div id="emojiBurstLayer" class="emoji-burst-layer" aria-hidden="true"></div>
+
   <script>
     const STORAGE_KEY = 'breakfast-checklist-v2';
     const undoStack = [];
@@ -546,6 +604,41 @@
       if (unit) entry.unit = unit;
       return entry;
     }
+
+    const PRODUCT_EMOJIS = {
+      orange_juice: '🍊',
+      tomatoes: '🍅',
+      red_pepper: '🫑',
+      onion: '🧅',
+      garlic: '🧄',
+      bananas: '🍌',
+      berries: '🫐',
+      spinach: '🥬',
+      avocado: '🥑',
+      lemon: '🍋',
+      apples: '🍎',
+      pears: '🍐',
+      cherries_berries: '🍒',
+      eggs: '🥚',
+      milk: '🥛',
+      cottage_cheese: '🧀',
+      hard_cheese: '🧀',
+      greek_yogurt: '🥛',
+      sour_cream: '🥛',
+      oats: '🥣',
+      whole_grain_bread: '🍞',
+      flour: '🌾',
+      granola: '🥣',
+      walnuts: '🥜',
+      flax_seeds: '🌰',
+      olive_oil: '🫒',
+      honey: '🍯',
+      sugar: '🍬',
+      vanilla: '🌿',
+      spices: '🌶️',
+      salt_pepper: '🧂',
+      herbs: '🌿'
+    };
 
     const products = {
       orange_juice: {
@@ -950,6 +1043,31 @@
       showSnackbar(undoStack.length);
     }
 
+    function spawnEmojiBurst(productId, anchorEl, mode) {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      const emoji = PRODUCT_EMOJIS[productId] || '🛒';
+      const layer = document.getElementById('emojiBurstLayer');
+      const rect = anchorEl.getBoundingClientRect();
+      const originX = rect.left + rect.width * 0.15;
+      const originY = rect.top + rect.height / 2;
+      const count = 2 + Math.floor(Math.random() * 2);
+      const animClass = mode === 'undo' ? 'fly-up' : 'pop-drop';
+
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement('span');
+        el.className = `emoji-particle ${animClass}`;
+        el.textContent = emoji;
+        el.style.left = `${originX}px`;
+        el.style.top = `${originY}px`;
+        el.style.setProperty('--drift', `${(Math.random() - 0.5) * 30}px`);
+        el.style.setProperty('--spin', `${(Math.random() - 0.5) * 40}deg`);
+        el.style.setProperty('--delay', `${i * 0.08}s`);
+        layer.appendChild(el);
+        el.addEventListener('animationend', () => el.remove());
+      }
+    }
+
     function animateCollapse(li, onDone) {
       const height = li.scrollHeight;
       li.style.height = `${height}px`;
@@ -1050,6 +1168,7 @@
       saveCheckedState(state);
 
       insertLiAtPosition(li, catIdx, sortOrder);
+      spawnEmojiBurst(li.dataset.productId, li, 'undo');
       animateExpand(li);
       updateProgress();
 
@@ -1114,10 +1233,11 @@
           cb.disabled = true;
           updateProgress();
 
+          spawnEmojiBurst(li.dataset.productId, li, 'check');
           animateCollapse(li, () => {
             li.remove();
             maybeRemoveEmptyCategory(ul);
-            pushUndoEntry({ id, li, checkbox: cb, catIdx, sortOrder });
+            pushUndoEntry({ id, li, checkbox: cb, catIdx, sortOrder, productId: li.dataset.productId });
             updateProgress();
           });
         });
