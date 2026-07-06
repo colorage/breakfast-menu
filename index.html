@@ -517,7 +517,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'breakfast-checklist-v1';
+    const STORAGE_KEY = 'breakfast-checklist-v2';
     const undoStack = [];
     let snackbarHideTimer = null;
     const SNACKBAR_DURATION = 2000;
@@ -532,9 +532,91 @@
       yearly: { label: 'раз у год' }
     };
 
-    function item(name, interval = 'weekly') {
-      return { name, interval };
+    const CATEGORY_ORDER = [
+      'Садавіна і гародніна',
+      'Малочнае і яйкі',
+      'Крупы, хлеб, мука',
+      'Арэхі і насенне',
+      'Іншае'
+    ];
+
+    function ing(product, label, qty, unit) {
+      const entry = { product, label };
+      if (qty != null) entry.qty = qty;
+      if (unit) entry.unit = unit;
+      return entry;
     }
+
+    const products = {
+      orange_juice: {
+        name: 'Апельсінавы сок',
+        category: 'Садавіна і гародніна',
+        interval: 'weekly',
+        unit: 'л',
+        sortOrder: 0,
+        formatQty(qty) {
+          const str = qty.toFixed(1).replace('.', ',');
+          return `${str} л (3 бутэлек па 1 л)`;
+        }
+      },
+      tomatoes: { name: 'Памідоры', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'шт', sortOrder: 1 },
+      red_pepper: { name: 'Чырвоны перец', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'шт', sortOrder: 2 },
+      onion: { name: 'Цыбуліна', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'шт', sortOrder: 3 },
+      garlic: { name: 'Часнок', category: 'Садавіна і гародніна', interval: 'biweekly', unit: 'галавачка', sortOrder: 4 },
+      bananas: { name: 'Бананы', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'шт', sortOrder: 5 },
+      berries: { name: 'Ягоды', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'г', sortOrder: 6 },
+      spinach: { name: 'Шпінат', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'г', sortOrder: 7 },
+      avocado: { name: 'Авакада', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'шт', sortOrder: 8 },
+      lemon: { name: 'Лімон', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'шт', sortOrder: 9 },
+      apples: { name: 'Яблыкі', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'шт', sortOrder: 10 },
+      pears: { name: 'Грушы', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'шт', sortOrder: 11 },
+      cherries_berries: { name: 'Вішні/ягоды', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'г', sortOrder: 12 },
+      eggs: {
+        name: 'Яйкі',
+        category: 'Малочнае і яйкі',
+        interval: 'weekly',
+        unit: 'шт',
+        sortOrder: 0,
+        formatQty(qty) {
+          const dozens = Math.ceil(qty / 10);
+          if (dozens === 1) return '1 дзясятак';
+          if (dozens < 5) return `${dozens} дзясяткі`;
+          return `${dozens} дзясяткаў`;
+        }
+      },
+      milk: { name: 'Малако', category: 'Малочнае і яйкі', interval: 'weekly', unit: 'л', sortOrder: 1 },
+      cottage_cheese: { name: 'Твараг 9%', category: 'Малочнае і яйкі', interval: 'weekly', unit: 'г', sortOrder: 2 },
+      hard_cheese: { name: 'Сыр твёрды', category: 'Малочнае і яйкі', interval: 'weekly', unit: 'г', sortOrder: 3 },
+      greek_yogurt: { name: 'Грэцкі ёгурт', category: 'Малочнае і яйкі', interval: 'weekly', unit: 'г', sortOrder: 4 },
+      sour_cream: { name: 'Смятана', category: 'Малочнае і яйкі', interval: 'weekly', unit: 'г', sortOrder: 5 },
+      oats: {
+        name: 'Аўсяныя крупы',
+        category: 'Крупы, хлеб, мука',
+        interval: 'weekly',
+        unit: 'пачка',
+        sortOrder: 0,
+        formatQty() { return '1 пачка'; }
+      },
+      whole_grain_bread: {
+        name: 'Цельназернавы хлеб',
+        category: 'Крупы, хлеб, мука',
+        interval: 'weekly',
+        unit: 'кавалкі',
+        sortOrder: 1,
+        formatQty() { return '1 буханка'; }
+      },
+      flour: { name: 'Мука', category: 'Крупы, хлеб, мука', interval: 'monthly', unit: 'г', sortOrder: 2 },
+      granola: { name: 'Гранола', category: 'Крупы, хлеб, мука', interval: 'biweekly', unit: 'г', sortOrder: 3 },
+      walnuts: { name: 'Валошковыя арэхі', category: 'Арэхі і насенне', interval: 'biweekly', unit: 'г', sortOrder: 0 },
+      flax_seeds: { name: 'Насенне лёну', category: 'Арэхі і насенне', interval: 'biweekly', unit: 'г', sortOrder: 1 },
+      olive_oil: { name: 'Аліўкавы алей', category: 'Іншае', interval: 'monthly', sortOrder: 0 },
+      honey: { name: 'Мёд', category: 'Іншае', interval: 'monthly', sortOrder: 1 },
+      sugar: { name: 'Цукар', category: 'Іншае', interval: 'monthly', sortOrder: 2 },
+      vanilla: { name: 'Ваніль', category: 'Іншае', interval: 'yearly', sortOrder: 3 },
+      spices: { name: 'Папрыка, кумін, карыца', category: 'Іншае', interval: 'yearly', sortOrder: 4 },
+      salt_pepper: { name: 'Соль, перац', category: 'Іншае', interval: 'yearly', sortOrder: 5 },
+      herbs: { name: 'Зеляніна (пятрушка, кроп, кінза)', category: 'Іншае', interval: 'weekly', sortOrder: 6 }
+    };
 
     const menu = [
       {
@@ -542,161 +624,213 @@
         title: 'Аўсянка з ягадамі',
         desc: 'Цёплая аўсянка з бананам, ягадамі і арэхамі.',
         ingredients: [
-          '1 склянка аўсяных круп',
-          '2 склянкі малако (або раствор)',
-          '2 бананы',
-          '200 г ягад (свежых або замарожаных)',
-          '4 ст. л. мёду',
-          '4 ст. л. валошковых арэхаў',
-          '1 ч. л. карыцы'
+          ing('oats', '1 склянка аўсяных круп', 1, 'пачка'),
+          ing('milk', '2 склянкі малако (або раствор)', 1, 'л'),
+          ing('bananas', '2 бананы', 2, 'шт'),
+          ing('berries', '200 г ягад (свежых або замарожаных)', 200, 'г'),
+          ing('honey', '4 ст. л. мёду'),
+          ing('walnuts', '4 ст. л. валошковых арэхаў'),
+          ing('spices', '1 ч. л. карыцы')
         ],
-        juice: true
+        juice: { product: 'orange_juice', qty: 0.4 }
       },
       {
         day: 'Аўторак',
         title: 'Амлет з гароднінай',
         desc: 'Пышны амлет з шпінатам і сыром.',
         ingredients: [
-          '6 яек',
-          '100 г шпінату',
-          '100 г твёрдага сыру',
-          '2 ст. л. аліўкавага алею',
-          '2 гародніны (пятрушка, кроп)',
-          'соль, перац'
+          ing('eggs', '6 яек', 6, 'шт'),
+          ing('spinach', '100 г шпінату', 100, 'г'),
+          ing('hard_cheese', '100 г твёрдага сыру', 100, 'г'),
+          ing('olive_oil', '2 ст. л. аліўкавага алею'),
+          ing('herbs', '2 гародніны (пятрушка, кроп)'),
+          ing('salt_pepper', 'соль, перац')
         ],
-        juice: true
+        juice: { product: 'orange_juice', qty: 0.4 }
       },
       {
         day: 'Серада',
         title: 'Запеканка з тварагу',
         desc: 'Пышная запеканка з тварагу са смятанай і мёдам — запякаецца ў духоўцы.',
         ingredients: [
-          '500 г тварагу (9%)',
-          '3 яйкі',
-          '4 ст. л. мукі',
-          '3 ст. л. цукру',
-          '1 ч. л. ванілі',
-          '100 г смятаны',
-          '2 ст. л. мёду',
-          '2 ст. л. аліўкавага алею (для змаствавання формы)'
+          ing('cottage_cheese', '500 г тварагу (9%)', 500, 'г'),
+          ing('eggs', '3 яйкі', 3, 'шт'),
+          ing('flour', '4 ст. л. мукі'),
+          ing('sugar', '3 ст. л. цукру'),
+          ing('vanilla', '1 ч. л. ванілі'),
+          ing('sour_cream', '100 г смятаны', 100, 'г'),
+          ing('honey', '2 ст. л. мёду'),
+          ing('olive_oil', '2 ст. л. аліўкавага алею (для змаствавання формы)')
         ],
-        juice: true
+        juice: { product: 'orange_juice', qty: 0.4 }
       },
       {
         day: 'Чацвер',
         title: 'Тосты з авакада',
         desc: 'Хрумясты тост з авакада і яйкам-пашот.',
         ingredients: [
-          '4 кавалкі цельназернавога хлеба',
-          '2 спелыя авакада',
-          '4 яйкі',
-          '2 ст. л. лімоннага соку',
-          '2 гародніны (кроп, кінза)',
-          'соль, чырвоны перец',
-          '2 ст. л. аліўкавага алею'
+          ing('whole_grain_bread', '4 кавалкі цельназернавога хлеба', 4, 'кавалкі'),
+          ing('avocado', '2 спелыя авакада', 2, 'шт'),
+          ing('eggs', '4 яйкі', 4, 'шт'),
+          ing('lemon', '2 ст. л. лімоннага соку', 1, 'шт'),
+          ing('herbs', '2 гародніны (кроп, кінза)'),
+          ing('salt_pepper', 'соль, чырвоны перец'),
+          ing('olive_oil', '2 ст. л. аліўкавага алею')
         ],
-        juice: true
+        juice: { product: 'orange_juice', qty: 0.4 }
       },
       {
         day: 'Пятніца',
         title: 'Ёгурт з гранолай',
         desc: 'Грэцкі ёгурт з хрумястай гранолай, садавінай і насеннем.',
         ingredients: [
-          '400 г грэцкага ёгурту',
-          '200 г гранолы',
-          '2 яблыкі',
-          '2 грушы',
-          '4 ст. л. насення лёну',
-          '4 ст. л. мёду',
-          '100 г вішняў або ягод'
+          ing('greek_yogurt', '400 г грэцкага ёгурту', 400, 'г'),
+          ing('granola', '200 г гранолы', 200, 'г'),
+          ing('apples', '2 яблыкі', 2, 'шт'),
+          ing('pears', '2 грушы', 2, 'шт'),
+          ing('flax_seeds', '4 ст. л. насення лёну', 50, 'г'),
+          ing('honey', '4 ст. л. мёду'),
+          ing('cherries_berries', '100 г вішняў або ягод', 100, 'г')
         ],
-        juice: true
+        juice: { product: 'orange_juice', qty: 0.4 }
       },
       {
         day: 'Субота',
         title: 'Рэстарацыя',
         desc: 'Сняданак або брунч у рэстарацыі — адпачынак ад гатавання!',
         ingredients: [],
-        restaurant: true,
-        juice: false
+        restaurant: true
       },
       {
         day: 'Нядзеля',
         title: 'Шакшука',
         desc: 'Яйкі ў тушанай памідоравай соўсе з перцам і лукам.',
         ingredients: [
-          '4 яйкі',
-          '4 памідоры',
-          '1 чырвоны перец',
-          '1 цыбуліна',
-          '2 зубчыкі часнаку',
-          '2 ст. л. аліўкавага алею',
-          '1 ч. л. папрыкі, кумін, соль',
-          '4 кавалкі хлеба (цельназернавы або багет)'
+          ing('eggs', '4 яйкі', 4, 'шт'),
+          ing('tomatoes', '4 памідоры', 4, 'шт'),
+          ing('red_pepper', '1 чырвоны перец', 1, 'шт'),
+          ing('onion', '1 цыбуліна', 1, 'шт'),
+          ing('garlic', '2 зубчыкі часнаку'),
+          ing('olive_oil', '2 ст. л. аліўкавага алею'),
+          ing('spices', '1 ч. л. папрыкі, кумін, соль'),
+          ing('whole_grain_bread', '4 кавалкі хлеба (цельназернавы або багет)', 4, 'кавалкі')
         ],
-        juice: true
+        juice: { product: 'orange_juice', qty: 0.4 }
       }
     ];
 
-    const shoppingList = [
-      {
-        category: 'Садавіна і гародніна',
-        items: [
-          item('Апельсінавы сок — 2,4 л (3 бутэлек па 1 л)'),
-          item('Памідоры — 4 шт.'),
-          item('Чырвоны перец — 1 шт.'),
-          item('Цыбуліна — 1 шт.'),
-          item('Часнок — 1 галавачка', 'biweekly'),
-          item('Бананы — 2 шт.'),
-          item('Ягоды — 200 г'),
-          item('Шпінат — 100 г'),
-          item('Авакада — 2 шт.'),
-          item('Лімон — 1 шт.'),
-          item('Яблыкі — 2 шт.'),
-          item('Грушы — 2 шт.'),
-          item('Вішні/ягоды — 100 г')
-        ]
-      },
-      {
-        category: 'Малочнае і яйкі',
-        items: [
-          item('Яйкі — 2 дзясяткі'),
-          item('Малако — 1 л'),
-          item('Твараг 9% — 500 г'),
-          item('Сыр твёрды — 100 г'),
-          item('Грэцкі ёгурт — 400 г'),
-          item('Смятана — 200 г')
-        ]
-      },
-      {
-        category: 'Крупы, хлеб, мука',
-        items: [
-          item('Аўсяныя крупы — 1 пачка'),
-          item('Цельназернавы хлеб — 1 буханка'),
-          item('Мука — 200 г', 'monthly'),
-          item('Гранола — 200 г', 'biweekly')
-        ]
-      },
-      {
-        category: 'Арэхі і насенне',
-        items: [
-          item('Валошковыя арэхі — 100 г', 'biweekly'),
-          item('Насенне лёну — 50 г', 'biweekly')
-        ]
-      },
-      {
-        category: 'Іншае',
-        items: [
-          item('Аліўкавы алей', 'monthly'),
-          item('Мёд', 'monthly'),
-          item('Цукар', 'monthly'),
-          item('Ваніль', 'yearly'),
-          item('Папрыка, кумін, карыца', 'yearly'),
-          item('Соль, перац', 'yearly'),
-          item('Зеляніна (пятрушка, кроп, кінза)')
-        ]
-      }
+    const pantryExtras = [
+      { product: 'garlic', qty: 1, unit: 'галавачка' },
+      { product: 'sour_cream', qty: 100, unit: 'г' },
+      { product: 'walnuts', qty: 100, unit: 'г' },
+      { product: 'flour', qty: 200, unit: 'г' },
+      { product: 'olive_oil' },
+      { product: 'honey' },
+      { product: 'sugar' },
+      { product: 'vanilla' },
+      { product: 'spices' },
+      { product: 'salt_pepper' },
+      { product: 'herbs' }
     ];
+
+    function formatQty(product, qty, unit) {
+      if (product.formatQty) return product.formatQty(qty);
+      if (unit === 'л') {
+        const str = Number.isInteger(qty) ? String(qty) : qty.toFixed(1).replace('.', ',');
+        return `${str} л`;
+      }
+      if (unit === 'шт') return `${qty} шт.`;
+      if (unit === 'г') return `${qty} г`;
+      if (unit === 'галавачка') return `${qty} галавачка`;
+      return `${qty} ${unit}`;
+    }
+
+    function formatShoppingName(productId, agg) {
+      const product = products[productId];
+      if (!product) return productId;
+      if (agg.qty == null) return product.name;
+      const qtyStr = formatQty(product, agg.qty, agg.unit || product.unit);
+      return `${product.name} — ${qtyStr}`;
+    }
+
+    function buildShoppingList() {
+      const totals = new Map();
+
+      function add(productId, qty, unit) {
+        if (qty == null) return;
+        const product = products[productId];
+        const resolvedUnit = unit || product?.unit;
+        const existing = totals.get(productId);
+        if (existing) {
+          existing.qty += qty;
+        } else {
+          totals.set(productId, { productId, qty, unit: resolvedUnit });
+        }
+      }
+
+      for (const day of menu) {
+        if (day.restaurant) continue;
+        for (const ingredient of day.ingredients) {
+          add(ingredient.product, ingredient.qty, ingredient.unit);
+        }
+        if (day.juice) {
+          add(day.juice.product, day.juice.qty, 'л');
+        }
+      }
+
+      for (const extra of pantryExtras) {
+        if (extra.qty != null) {
+          add(extra.product, extra.qty, extra.unit);
+        }
+      }
+
+      const pantryOnly = pantryExtras
+        .filter(extra => extra.qty == null)
+        .map(extra => extra.product);
+
+      const byCategory = new Map();
+      for (const category of CATEGORY_ORDER) {
+        byCategory.set(category, []);
+      }
+
+      for (const [productId, agg] of totals) {
+        const product = products[productId];
+        if (!product) continue;
+        const interval = pantryExtras.find(e => e.product === productId && e.interval)?.interval
+          || product.interval;
+        const list = byCategory.get(product.category);
+        if (!list) continue;
+        list.push({
+          id: productId,
+          name: formatShoppingName(productId, agg),
+          interval,
+          sortOrder: product.sortOrder ?? 99
+        });
+      }
+
+      for (const productId of pantryOnly) {
+        const product = products[productId];
+        if (!product || totals.has(productId)) continue;
+        const list = byCategory.get(product.category);
+        if (!list) continue;
+        list.push({
+          id: productId,
+          name: product.name,
+          interval: product.interval,
+          sortOrder: product.sortOrder ?? 99
+        });
+      }
+
+      return CATEGORY_ORDER
+        .map(category => ({
+          category,
+          items: (byCategory.get(category) || [])
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+        }))
+        .filter(cat => cat.items.length > 0);
+    }
+
+    let shoppingList = buildShoppingList();
 
     function getTodayIndex() {
       return (new Date().getDay() + 6) % 7;
@@ -714,10 +848,13 @@
         ].filter(Boolean).join(' ');
         const todayBadge = isToday ? '<span class="today-badge">Сёння</span>' : '';
         const ingredientsHtml = day.ingredients.length
-          ? `<ul>${day.ingredients.map(i => `<li>${i}</li>`).join('')}</ul>`
+          ? `<ul>${day.ingredients.map(i => {
+              const label = i.label || products[i.product]?.name || '';
+              return `<li data-product="${i.product}">${label}</li>`;
+            }).join('')}</ul>`
           : '';
         const juiceHtml = day.juice
-          ? `<p class="juice-note">+ апельсінавы сок (400 мл — па 200 мл на чалавека)</p>`
+          ? `<p class="juice-note">+ ${products[day.juice.product]?.name.toLowerCase() || 'апельсінавы сок'} (${day.juice.qty * 1000} мл — па ${day.juice.qty * 1000 / 2} мл на чалавека)</p>`
           : '';
         return `
           <div class="${itemClass}">
@@ -882,20 +1019,16 @@
       return categoryEl.querySelector('.checklist');
     }
 
-    function insertLiAtPosition(li, catIdx, itemIdx) {
+    function insertLiAtPosition(li, catIdx, sortOrder) {
       const ul = ensureCategory(catIdx);
-      const cat = shoppingList[catIdx];
+      const siblings = [...ul.querySelectorAll('li')];
+      const next = siblings.find(sib => Number(sib.dataset.sortOrder) > sortOrder);
 
-      for (let i = itemIdx + 1; i < cat.items.length; i++) {
-        const nextId = `item-${catIdx}-${i}`;
-        const nextLi = ul.querySelector(`[data-id="${nextId}"]`)?.closest('li');
-        if (nextLi) {
-          ul.insertBefore(li, nextLi);
-          return;
-        }
+      if (next) {
+        ul.insertBefore(li, next);
+      } else {
+        ul.appendChild(li);
       }
-
-      ul.appendChild(li);
     }
 
     function maybeRemoveEmptyCategory(ul) {
@@ -908,7 +1041,7 @@
       const entry = undoStack.pop();
       if (!entry) return;
 
-      const { id, li, checkbox, catIdx, itemIdx } = entry;
+      const { id, li, checkbox, catIdx, sortOrder } = entry;
 
       checkbox.checked = false;
       checkbox.disabled = false;
@@ -916,7 +1049,7 @@
       state[id] = false;
       saveCheckedState(state);
 
-      insertLiAtPosition(li, catIdx, itemIdx);
+      insertLiAtPosition(li, catIdx, sortOrder);
       animateExpand(li);
       updateProgress();
 
@@ -930,19 +1063,20 @@
     }
 
     function renderShopping() {
+      shoppingList = buildShoppingList();
       const container = document.getElementById('shopping');
       const checked = getCheckedState();
 
       container.innerHTML = shoppingList.map((cat, catIdx) => {
-        const itemsHtml = cat.items.map((shoppingItem, itemIdx) => {
-          const id = `item-${catIdx}-${itemIdx}`;
+        const itemsHtml = cat.items.map((shoppingItem) => {
+          const id = `product-${shoppingItem.id}`;
           if (checked[id]) return '';
           const intervalInfo = PURCHASE_INTERVALS[shoppingItem.interval];
           const badgeHtml = intervalInfo?.label
             ? `<span class="interval-badge" title="Не патрабуе штотыднёвай пакупкі">${intervalInfo.label}</span>`
             : '';
           return `
-            <li>
+            <li data-cat-idx="${catIdx}" data-product-id="${shoppingItem.id}" data-sort-order="${shoppingItem.sortOrder}">
               <label>
                 <input type="checkbox" id="${id}" data-id="${id}">
                 <span class="item-row">
@@ -971,11 +1105,8 @@
           const id = cb.dataset.id;
           const li = cb.closest('li');
           const ul = li.parentElement;
-          const match = id.match(/^item-(\d+)-(\d+)$/);
-          if (!match) return;
-
-          const catIdx = Number(match[1]);
-          const itemIdx = Number(match[2]);
+          const catIdx = Number(li.dataset.catIdx);
+          const sortOrder = Number(li.dataset.sortOrder);
 
           const state = getCheckedState();
           state[id] = true;
@@ -986,7 +1117,7 @@
           animateCollapse(li, () => {
             li.remove();
             maybeRemoveEmptyCategory(ul);
-            pushUndoEntry({ id, li, checkbox: cb, catIdx, itemIdx });
+            pushUndoEntry({ id, li, checkbox: cb, catIdx, sortOrder });
             updateProgress();
           });
         });
