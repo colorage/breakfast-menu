@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Сняданкі на тыдзень</title>
+  <title>Меню на тыдзень</title>
   <style>
     :root {
       --bg: #faf8f5;
@@ -535,20 +535,65 @@
         background: #333;
       }
     }
+
+    .main-layout { grid-template-columns: minmax(0, 1.8fr) minmax(280px, 1fr); }
+    .date-range { color: var(--text-muted); margin: -.6rem 0 1.25rem; }
+    .calendar-day { margin-bottom: 1.5rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow: hidden; box-shadow: var(--shadow); }
+    .calendar-date { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .4rem; padding: .8rem 1.1rem; background: var(--bg); font-size: .95rem; }
+    .calendar-date time { font-size: .85rem; font-weight: 400; color: var(--text-muted); }
+    .today .calendar-date { background: var(--accent-soft); }
+    .meal-grid { display: grid; grid-template-columns: 1fr 1fr; }
+    .meal-card { padding: 1.1rem; min-width: 0; }
+    .meal-card + .meal-card { border-left: 1px solid var(--border); }
+    .meal-heading { display: flex; justify-content: space-between; gap: .5rem; align-items: baseline; margin-bottom: .5rem; }
+    .meal-heading .meal-label { font-weight: 700; font-size: .85rem; color: var(--accent); }
+    .meal-heading span { font-size: .72rem; color: var(--text-muted); }
+    .meal-viewport { overflow: hidden; touch-action: pan-y pinch-zoom; cursor: grab; user-select: none; border-radius: 10px; }
+    .meal-viewport.dragging { cursor: grabbing; }
+    .meal-slide { transform: translateX(var(--drag-x, 0px)); }
+    .meal-title { font-size: 1rem; line-height: 1.4; min-height: 2.8em; display: flex; align-items: center; }
+    .meal-controls { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+    .meal-arrow { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border: 1px solid var(--border); border-radius: 50%; background: var(--surface); color: var(--text); cursor: pointer; }
+    .meal-arrow:hover { background: var(--accent-soft); border-color: var(--accent); }
+    .meal-arrow svg { width: 20px; height: 20px; }
+    .meal-position { text-align: center; font-size: .85rem; font-weight: 600; }
+    .swipe-hint { display: block; color: var(--text-muted); font-size: .7rem; font-weight: 400; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+    @media (prefers-reduced-motion: no-preference) {
+      .meal-card.switching .meal-slide { animation: mealEnter .18s ease-out; }
+      @keyframes mealEnter { from { opacity: .5; transform: translateX(var(--enter-x)); } to { opacity: 1; transform: translateX(0); } }
+    }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .meal-image { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: contain; border-radius: 10px; margin: .85rem 0; background: var(--bg); }
+    .meal-image[hidden] { display: none; }
+    .meal-card .desc { font-size: .85rem; color: var(--text-muted); margin: .75rem 0; }
+    .ingredients summary { min-height: 40px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: .8rem; font-weight: 600; list-style: none; }
+    .ingredients summary::-webkit-details-marker { display: none; }
+    .ingredients ul { padding-left: 1.1rem; font-size: .82rem; color: var(--text-muted); }
+    .ingredients li { margin: .3rem 0; }
+    .juice-note { font-size: .75rem; color: var(--accent); margin-top: .6rem; }
+    .empty-shopping { color: var(--text-muted); font-size: .9rem; }
+    .shopping-section { padding: 1.25rem; }
+    @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } .shopping-section { position: static; max-height: none; overflow: visible; } }
+    @media (max-width: 480px) { .container { padding: 1.25rem .75rem 3rem; } .meal-grid { grid-template-columns: 1fr; } .meal-card + .meal-card { border-left: 0; border-top: 1px solid var(--border); } .meal-image { max-width: 280px; margin: .85rem auto; } .undo-snackbar { width: calc(100% - 1.5rem); gap: .5rem; } }
+    @media print { .meal-controls { display: none; } .main-layout { display: block; } .meal-image { max-width: 130px; margin: .5rem auto; } .calendar-day { break-inside: avoid; box-shadow: none; } .ingredients > ul { display: block !important; } .meal-grid { grid-template-columns: 1fr 1fr; } }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Сняданкі на тыдзень</h1>
-      <p>Здаровыя і разнастайныя сняданкі для двух чалавек. Кожную раніцу (акрамя суботы) — апельсінавы сок з бутэлек, па 200 мл на чалавека.</p>
-      <span class="juice-badge">🍊 Сок з бутэлек — 400 мл на дзень</span>
+      <h1>Меню на тыдзень</h1>
+      <p>Сняданкі і вячэры для двух чалавек. Абірайце стравы на сем дзён ад сёння — спіс пакупак складзецца сам.</p>
+      <span class="juice-badge">🍊 Да хатняга сняданку — 400 мл соку на дваіх</span>
     </header>
 
     <div class="main-layout">
       <section class="menu-column">
-        <h2>Меню</h2>
+        <h2>Вашы наступныя 7 дзён</h2>
+        <p id="dateRange" class="date-range"></p>
+        <p id="storageNotice" class="shopping-note" role="status" hidden></p>
         <div class="days-grid" id="menu"></div>
+        <p id="mealAnnouncement" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
       </section>
 
       <section class="shopping-section">
@@ -559,7 +604,7 @@
           </div>
           <button type="button" class="btn-reset" id="resetBtn">Скінуць спіс</button>
         </div>
-        <p class="shopping-note">Прадметы з пазнакай не патрабуюць штотыднёвай пакупкі.</p>
+        <p class="shopping-note">На дваіх, паводле выбранага меню. Пазнакі паказваюць частату пакупкі запасаў.</p>
         <div id="shopping"></div>
       </section>
     </div>
@@ -616,21 +661,15 @@
       spinach: '🥬',
       avocado: '🥑',
       lemon: '🍋',
-      apples: '🍎',
-      pears: '🍐',
-      cherries_berries: '🍒',
       eggs: '🥚',
       milk: '🥛',
       cottage_cheese: '🧀',
       hard_cheese: '🧀',
-      greek_yogurt: '🥛',
       sour_cream: '🥛',
       oats: '🥣',
       whole_grain_bread: '🍞',
       flour: '🌾',
-      granola: '🥣',
       walnuts: '🥜',
-      flax_seeds: '🌰',
       olive_oil: '🫒',
       honey: '🍯',
       sugar: '🍬',
@@ -649,7 +688,7 @@
         sortOrder: 0,
         formatQty(qty) {
           const str = qty.toFixed(1).replace('.', ',');
-          return `${str} л (3 бутэлек па 1 л)`;
+          return `${str} л · бутэлькі па 1 л: ${Math.ceil(Number(qty.toFixed(3)))}`;
         }
       },
       tomatoes: { name: 'Памідоры', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'шт', sortOrder: 1 },
@@ -661,9 +700,6 @@
       spinach: { name: 'Шпінат', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'г', sortOrder: 7 },
       avocado: { name: 'Авакада', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'шт', sortOrder: 8 },
       lemon: { name: 'Лімон', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'шт', sortOrder: 9 },
-      apples: { name: 'Яблыкі', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'шт', sortOrder: 10 },
-      pears: { name: 'Грушы', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'шт', sortOrder: 11 },
-      cherries_berries: { name: 'Вішні/ягоды', category: 'Садавіна і гародніна', interval: 'weekly', unit: 'г', sortOrder: 12 },
       eggs: {
         name: 'Яйкі',
         category: 'Малочнае і яйкі',
@@ -680,7 +716,6 @@
       milk: { name: 'Малако', category: 'Малочнае і яйкі', interval: 'weekly', unit: 'л', sortOrder: 1 },
       cottage_cheese: { name: 'Твараг 9%', category: 'Малочнае і яйкі', interval: 'weekly', unit: 'г', sortOrder: 2 },
       hard_cheese: { name: 'Сыр твёрды', category: 'Малочнае і яйкі', interval: 'weekly', unit: 'г', sortOrder: 3 },
-      greek_yogurt: { name: 'Грэцкі ёгурт', category: 'Малочнае і яйкі', interval: 'weekly', unit: 'г', sortOrder: 4 },
       sour_cream: { name: 'Смятана', category: 'Малочнае і яйкі', interval: 'weekly', unit: 'г', sortOrder: 5 },
       oats: {
         name: 'Аўсяныя крупы',
@@ -688,7 +723,7 @@
         interval: 'weekly',
         unit: 'пачка',
         sortOrder: 0,
-        formatQty() { return '1 пачка'; }
+        formatQty(qty) { return `${qty} пачк.`; }
       },
       whole_grain_bread: {
         name: 'Цельназернавы хлеб',
@@ -696,12 +731,10 @@
         interval: 'weekly',
         unit: 'кавалкі',
         sortOrder: 1,
-        formatQty() { return '1 буханка'; }
+        formatQty(qty) { return `${qty} кавалкаў`; }
       },
       flour: { name: 'Мука', category: 'Крупы, хлеб, мука', interval: 'monthly', unit: 'г', sortOrder: 2 },
-      granola: { name: 'Гранола', category: 'Крупы, хлеб, мука', interval: 'biweekly', unit: 'г', sortOrder: 3 },
       walnuts: { name: 'Валошковыя арэхі', category: 'Арэхі і насенне', interval: 'biweekly', unit: 'г', sortOrder: 0 },
-      flax_seeds: { name: 'Насенне лёну', category: 'Арэхі і насенне', interval: 'biweekly', unit: 'г', sortOrder: 1 },
       olive_oil: { name: 'Аліўкавы алей', category: 'Іншае', interval: 'monthly', sortOrder: 0 },
       honey: { name: 'Мёд', category: 'Іншае', interval: 'monthly', sortOrder: 1 },
       sugar: { name: 'Цукар', category: 'Іншае', interval: 'monthly', sortOrder: 2 },
@@ -711,8 +744,9 @@
       herbs: { name: 'Зеляніна (пятрушка, кроп, кінза)', category: 'Іншае', interval: 'weekly', sortOrder: 6 }
     };
 
-    const menu = [
+    const classicBreakfasts = [
       {
+        id: 'oatmeal',
         day: 'Панядзелак',
         title: 'Аўсянка з ягадамі',
         desc: 'Цёплая аўсянка з бананам, ягадамі і арэхамі.',
@@ -728,6 +762,7 @@
         juice: { product: 'orange_juice', qty: 0.4 }
       },
       {
+        id: 'omelet',
         day: 'Аўторак',
         title: 'Амлет з гароднінай',
         desc: 'Пышны амлет з шпінатам і сыром.',
@@ -742,6 +777,7 @@
         juice: { product: 'orange_juice', qty: 0.4 }
       },
       {
+        id: 'casserole',
         day: 'Серада',
         title: 'Запеканка з тварагу',
         desc: 'Пышная запеканка з тварагу са смятанай і мёдам — запякаецца ў духоўцы.',
@@ -758,6 +794,7 @@
         juice: { product: 'orange_juice', qty: 0.4 }
       },
       {
+        id: 'avocado-toast',
         day: 'Чацвер',
         title: 'Тосты з авакада',
         desc: 'Хрумясты тост з авакада і яйкам-пашот.',
@@ -773,28 +810,7 @@
         juice: { product: 'orange_juice', qty: 0.4 }
       },
       {
-        day: 'Пятніца',
-        title: 'Ёгурт з гранолай',
-        desc: 'Грэцкі ёгурт з хрумястай гранолай, садавінай і насеннем.',
-        ingredients: [
-          ing('greek_yogurt', '400 г грэцкага ёгурту', 400, 'г'),
-          ing('granola', '200 г гранолы', 200, 'г'),
-          ing('apples', '2 яблыкі', 2, 'шт'),
-          ing('pears', '2 грушы', 2, 'шт'),
-          ing('flax_seeds', '4 ст. л. насення лёну', 50, 'г'),
-          ing('honey', '4 ст. л. мёду'),
-          ing('cherries_berries', '100 г вішняў або ягод', 100, 'г')
-        ],
-        juice: { product: 'orange_juice', qty: 0.4 }
-      },
-      {
-        day: 'Субота',
-        title: 'Рэстарацыя',
-        desc: 'Сняданак або брунч у рэстарацыі — адпачынак ад гатавання!',
-        ingredients: [],
-        restaurant: true
-      },
-      {
+        id: 'shakshuka',
         day: 'Нядзеля',
         title: 'Шакшука',
         desc: 'Яйкі ў тушанай памідоравай соўсе з перцам і лукам.',
@@ -812,21 +828,117 @@
       }
     ];
 
-    const pantryExtras = [
-      { product: 'garlic', qty: 1, unit: 'галавачка' },
-      { product: 'sour_cream', qty: 100, unit: 'г' },
-      { product: 'walnuts', qty: 100, unit: 'г' },
-      { product: 'flour', qty: 200, unit: 'г' },
-      { product: 'olive_oil' },
-      { product: 'honey' },
-      { product: 'sugar' },
-      { product: 'vanilla' },
-      { product: 'spices' },
-      { product: 'salt_pepper' },
-      { product: 'herbs' }
-    ];
+    // Catalog and dated assignments are separate so choices survive the rolling week.
+    const PLAN_KEY = 'meal-plan-v1';
+    const TOTALS_KEY = 'meal-shopping-totals-v1';
+    const WEEKDAYS = ['Панядзелак', 'Аўторак', 'Серада', 'Чацвер', 'Пятніца', 'Субота', 'Нядзеля'];
+    function readStorage(key, fallback = {}) {
+      try {
+        const value = JSON.parse(localStorage.getItem(key));
+        return value && typeof value === 'object' && !Array.isArray(value) ? value : fallback;
+      } catch { return fallback; }
+    }
+    function writeStorage(key, value) {
+      try { localStorage.setItem(key, JSON.stringify(value)); }
+      catch {
+        const notice = document.getElementById('storageNotice');
+        notice.hidden = false;
+        notice.textContent = 'Выбар працуе ў гэтай укладцы, але браўзер не дазваляе захаваць яго пасля закрыцця.';
+      }
+    }
+    const newProducts = {
+      chicken: ['Курынае філе', 'Мяса і рыба', 'г'],
+      fish: ['Філе белай рыбы', 'Мяса і рыба', 'г'],
+      turkey: ['Філе індычкі', 'Мяса і рыба', 'г'],
+      salmon: ['Слабасалёны ласось', 'Мяса і рыба', 'г'],
+      shrimp: ['Крэветкі ачышчаныя', 'Мяса і рыба', 'г'],
+      beef: ['Ялавічная выразка', 'Мяса і рыба', 'г'],
+      cream_cheese: ['Сыр «Філадэльфія»', 'Малочнае і яйкі', 'г'],
+      barley: ['Перловыя крупы', 'Крупы, хлеб, мука', 'г'],
+      cherry_tomatoes: ['Памідоры чэры', 'Садавіна і гародніна', 'г'],
+      shallot: ['Цыбуля шалот', 'Садавіна і гародніна', 'шт'],
+      pickles: ['Марынаваныя агуркі', 'Садавіна і гародніна', 'г'],
+      capers: ['Каперсы', 'Іншае', 'г'],
+      mustard: ['Дыжонская гарчыца', 'Іншае', 'г'],
+      tuna: ['Тунец кансерваваны', 'Мяса і рыба', 'г'],
+      potatoes: ['Бульба', 'Садавіна і гародніна', 'г'],
+      broccoli: ['Брокалі', 'Садавіна і гародніна', 'г'],
+      mushrooms: ['Шампіньёны', 'Садавіна і гародніна', 'г'],
+      carrots: ['Морква', 'Садавіна і гародніна', 'шт'],
+      cucumber: ['Агурок', 'Садавіна і гародніна', 'шт'],
+      lettuce: ['Ліставая салата', 'Садавіна і гародніна', 'г'],
+      pasta: ['Макароны', 'Крупы, хлеб, мука', 'г'],
+      buckwheat: ['Грэчка', 'Крупы, хлеб, мука', 'г'],
+      bulgur: ['Булгур', 'Крупы, хлеб, мука', 'г'],
+      lentils: ['Чырвоная сачавіца', 'Крупы, хлеб, мука', 'г'],
+    };
+    CATEGORY_ORDER.splice(2, 0, 'Мяса і рыба');
+    Object.entries(newProducts).forEach(([id, [name, category, unit]], index) => {
+      products[id] = { name, category, unit, interval: 'weekly', sortOrder: 20 + index };
+    });
+    const breakfastIds = ['oatmeal', 'omelet', 'casserole', 'avocado-toast', 'buckwheat-salmon', 'restaurant', 'shakshuka'];
+    const recipes = {};
+    classicBreakfasts.forEach(dish => {
+      recipes[dish.id] = { ...dish, type: 'breakfast' };
+    });
+    function ingredient(id, qty) {
+      return ing(id, `${products[id].name} — ${qty} ${products[id].unit}`, qty, products[id].unit);
+    }
+    function recipe(id, type, title, desc, quantities, pantry = []) {
+      recipes[id] = { id, type, title, desc, ingredients: [
+        ...quantities.map(([product, qty]) => ingredient(product, qty)),
+        ...pantry.map(product => ing(product, products[product].name))
+      ] };
+    }
+    recipe('syrniki', 'breakfast', 'Сырнікі', 'Залацістыя сырнікі з тварагу са смятанай і ягадамі.', [['cottage_cheese',400],['eggs',1],['flour',60],['sour_cream',80],['berries',100]], ['sugar','olive_oil']);
+    recipe('salmon-crepes', 'breakfast', 'Бліны з ласосем', 'Тонкія бліны з ласосем, свежым агурком і сырам «Філадэльфія».', [['milk',0.3],['eggs',2],['flour',120],['salmon',180],['cucumber',1],['cream_cheese',120]], ['olive_oil','herbs']);
+    recipe('buckwheat-salmon', 'breakfast', 'Грэчка з ласосем', 'Цёплая грэчка са слабасалёным ласосем, сырам «Філадэльфія» і кропам.', [['buckwheat',150],['salmon',180],['cream_cheese',100]], ['herbs']);
+    recipe('chicken-barley', 'dinner', 'Курыца з перлоўкай', 'Запечанае курынае філе з перлоўкай і брокалі.', [['chicken',400],['barley',160],['broccoli',300]], ['olive_oil','salt_pepper']);
+    recipe('fish-potatoes', 'dinner', 'Рыба з бульбай', 'Белая рыба з запечанай бульбай, лімонам і кропам.', [['fish',400],['potatoes',500],['lemon',1]], ['olive_oil','herbs','salt_pepper']);
+    recipe('shrimp-pasta', 'dinner', 'Паста з крэветкамі і памідорамі', 'Паста з крэветкамі, памідорамі чэры, часнаком і зелянінай.', [['pasta',200],['shrimp',300],['cherry_tomatoes',250]], ['olive_oil','garlic','herbs','salt_pepper']);
+    recipe('mushroom-buckwheat', 'dinner', 'Грэчка з грыбамі', 'Грэчка з падсмажанымі шампіньёнамі і цыбуляй.', [['buckwheat',180],['mushrooms',300],['onion',1]], ['olive_oil','herbs','salt_pepper']);
+    recipe('turkey-bulgur', 'dinner', 'Індычка з булгурам', 'Пяшчотная індычка з булгурам і салодкім перцам.', [['turkey',400],['bulgur',160],['red_pepper',1],['onion',1]], ['olive_oil','herbs','salt_pepper']);
+    recipe('lentils-turkey', 'dinner', 'Сачавіца з індычкай', 'Густая тушаная сачавіца з кавалачкамі індычкі, морквай і памідорамі.', [['lentils',180],['turkey',300],['carrots',2],['tomatoes',3],['onion',1]], ['olive_oil','spices','herbs','salt_pepper']);
+    recipe('tuna-salad', 'dinner', 'Салата з тунцом', 'Свежая салата з тунцом, яйкам, агурком і памідорамі.', [['tuna',200],['eggs',2],['lettuce',100],['cucumber',1],['tomatoes',2]], ['olive_oil','salt_pepper']);
+    recipe('beef-tartare', 'dinner', 'Тартар з ялавічыны', 'Дробна сечаная сырая ялавічная выразка з каперсамі, шалотам, марынаваным агурком і дыжонскай гарчыцай. Падаецца з тостамі.', [['beef',300],['capers',20],['shallot',1],['pickles',50],['mustard',20],['whole_grain_bread',4]], ['olive_oil','herbs','salt_pepper']);
+    recipes.restaurant = { id: 'restaurant', title: 'Рэстарацыя', desc: 'Адпачынак ад гатавання — абярыце любімую рэстарацыю.', ingredients: [], external: true };
+    recipes.delivery = { id: 'delivery', title: 'Дастаўка', desc: 'Замоўце любімую ежу з дастаўкай. Прадукты купляць не трэба.', ingredients: [], external: true };
+    const dinnerIds = ['chicken-barley', 'fish-potatoes', 'shrimp-pasta', 'mushroom-buckwheat', 'turkey-bulgur', 'lentils-turkey', 'beef-tartare'];
+    // Migrate edited dishes; deleted dishes fall back to the date's current default.
+    const recipeReplacements = {
+      'crepes': 'salmon-crepes',
+      'buckwheat-eggs': 'buckwheat-salmon',
+      'chicken-rice': 'chicken-barley',
+      'vegetable-pasta': 'shrimp-pasta',
+      'lentils': 'lentils-turkey'
+    };
+    const choices = Object.fromEntries(['breakfast', 'dinner'].map(type => [type,
+      [...Object.values(recipes).filter(r => r.type === type), recipes.restaurant, recipes.delivery]
+    ]));
+    function dateKey(date) {
+      return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    }
+    function weekDates(now = new Date()) {
+      return Array.from({ length: 7 }, (_, offset) => new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset, 12));
+    }
+    function weekday(date) { return (date.getDay() + 6) % 7; }
+    let dates = weekDates();
+    let assignments = readStorage(PLAN_KEY);
+    function normalizePlan() {
+      assignments = Object.fromEntries(dates.map(date => {
+        const key = dateKey(date), saved = assignments[key] || {}, day = weekday(date);
+        return [key, Object.fromEntries(['breakfast','dinner'].map(type => {
+          const selected = recipeReplacements[saved[type]] || saved[type];
+          return [type, choices[type].some(r => r.id === selected)
+            ? selected : (type === 'breakfast' ? breakfastIds[day] : dinnerIds[day])];
+        }))];
+      }));
+      writeStorage(PLAN_KEY, assignments);
+    }
+    normalizePlan();
 
     function formatQty(product, qty, unit) {
+      qty = Number(qty.toFixed(4));
       if (product.formatQty) return product.formatQty(qty);
       if (unit === 'л') {
         const str = Number.isInteger(qty) ? String(qty) : qty.toFixed(1).replace('.', ',');
@@ -848,139 +960,178 @@
 
     function buildShoppingList() {
       const totals = new Map();
-
-      function add(productId, qty, unit) {
-        if (qty == null) return;
-        const product = products[productId];
-        const resolvedUnit = unit || product?.unit;
-        const existing = totals.get(productId);
-        if (existing) {
-          existing.qty += qty;
-        } else {
-          totals.set(productId, { productId, qty, unit: resolvedUnit });
-        }
+      function add(id, qty, unit) {
+        const current = totals.get(id) || { qty: null, unit: unit || products[id].unit, uses: 0 };
+        if (qty != null) current.qty = (current.qty || 0) + qty;
+        else current.uses++;
+        totals.set(id, current);
       }
-
-      for (const day of menu) {
-        if (day.restaurant) continue;
-        for (const ingredient of day.ingredients) {
-          add(ingredient.product, ingredient.qty, ingredient.unit);
-        }
-        if (day.juice) {
-          add(day.juice.product, day.juice.qty, 'л');
-        }
-      }
-
-      for (const extra of pantryExtras) {
-        if (extra.qty != null) {
-          add(extra.product, extra.qty, extra.unit);
-        }
-      }
-
-      const pantryOnly = pantryExtras
-        .filter(extra => extra.qty == null)
-        .map(extra => extra.product);
-
-      const byCategory = new Map();
-      for (const category of CATEGORY_ORDER) {
-        byCategory.set(category, []);
-      }
-
-      for (const [productId, agg] of totals) {
-        const product = products[productId];
-        if (!product) continue;
-        const interval = pantryExtras.find(e => e.product === productId && e.interval)?.interval
-          || product.interval;
-        const list = byCategory.get(product.category);
-        if (!list) continue;
-        list.push({
-          id: productId,
-          name: formatShoppingName(productId, agg),
-          interval,
-          sortOrder: product.sortOrder ?? 99
+      dates.forEach(date => {
+        const selected = assignments[dateKey(date)];
+        ['breakfast','dinner'].forEach(type => {
+          const dish = recipes[selected[type]];
+          dish.ingredients.forEach(i => add(i.product, i.qty, i.unit));
+          if (type === 'breakfast' && !dish.external) add('orange_juice', 0.4, 'л');
         });
-      }
-
-      for (const productId of pantryOnly) {
-        const product = products[productId];
-        if (!product || totals.has(productId)) continue;
-        const list = byCategory.get(product.category);
-        if (!list) continue;
-        list.push({
-          id: productId,
-          name: product.name,
-          interval: product.interval,
-          sortOrder: product.sortOrder ?? 99
-        });
-      }
-
-      return CATEGORY_ORDER
-        .map(category => ({
-          category,
-          items: (byCategory.get(category) || [])
-            .sort((a, b) => a.sortOrder - b.sortOrder)
-        }))
-        .filter(cat => cat.items.length > 0);
+      });
+      return CATEGORY_ORDER.map(category => ({ category, items: [...totals].filter(([id]) => products[id].category === category).map(([id, agg]) => ({
+        id, name: formatShoppingName(id, agg), interval: products[id].interval,
+        signature: JSON.stringify([agg.qty == null ? null : Number(agg.qty.toFixed(4)), agg.unit, agg.uses]),
+        sortOrder: products[id].sortOrder ?? 99
+      })).sort((a,b) => a.sortOrder - b.sortOrder) })).filter(cat => cat.items.length);
     }
-
     let shoppingList = buildShoppingList();
-
-    function getTodayIndex() {
-      return (new Date().getDay() + 6) % 7;
+    let checkedState = readStorage(STORAGE_KEY);
+    let previousTotals = readStorage(TOTALS_KEY);
+    function reconcileShopping() {
+      hideSnackbar();
+      const next = buildShoppingList();
+      const previous = previousTotals;
+      const signatures = Object.fromEntries(next.flatMap(cat => cat.items.map(item => [item.id, item.signature])));
+      checkedState = Object.fromEntries(next.flatMap(cat => cat.items)
+        .filter(item => checkedState[`product-${item.id}`] && previous[item.id] === item.signature)
+        .map(item => [`product-${item.id}`, true]));
+      saveCheckedState(checkedState);
+      previousTotals = signatures;
+      writeStorage(TOTALS_KEY, signatures);
+      shoppingList = next;
     }
-
+    function mealHtml(key, type, eager) {
+      const dish = recipes[assignments[key][type]];
+      const label = type === 'breakfast' ? 'Сняданак' : 'Вячэра';
+      const position = choices[type].findIndex(r => r.id === dish.id);
+      const hintId = `${key}-${type}-hint`;
+      return `<div class="meal-heading"><span class="meal-label">${label}</span><span>${dish.external ? 'Без гатавання' : 'На дваіх'}</span></div>
+        <div class="meal-picker" data-date="${key}" data-meal="${type}" data-recipe="${dish.id}" role="group" aria-label="Выбар стравы: ${label}, ${key}">
+          <div class="meal-viewport" tabindex="0" role="group" aria-label="${label}: ${dish.title}" aria-describedby="${hintId}">
+            <div class="meal-slide">
+              <h4 class="meal-title">${dish.title}</h4>
+              <img class="meal-image" src="assets/meals/${dish.id}.webp" width="640" height="640" alt="Акварэль: ${dish.title}" draggable="false" loading="${eager ? 'eager' : 'lazy'}">
+            </div>
+          </div>
+          <div class="meal-controls">
+            <button type="button" class="meal-arrow" data-step="-1" aria-label="Папярэдняя страва: ${label}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
+            <p class="meal-position">${position + 1} / ${choices[type].length}<span id="${hintId}" class="swipe-hint">Гартайце ўлева ці ўправа</span></p>
+            <button type="button" class="meal-arrow" data-step="1" aria-label="Наступная страва: ${label}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button>
+          </div>
+        </div>
+        <p class="desc">${dish.desc}</p>
+        ${dish.external ? '' : `<details class="ingredients"><summary>Інгрэдыенты на дваіх <span aria-hidden="true">＋</span></summary><ul>${dish.ingredients.map(i => `<li>${i.label}</li>`).join('')}</ul></details>`}
+        ${type === 'breakfast' && !dish.external ? '<p class="juice-note">+ Апельсінавы сок · 400 мл</p>' : ''}`;
+    }
+    function bindImageErrors(container) {
+      container.querySelectorAll('img').forEach(img => img.addEventListener('error', () => { img.hidden = true; }));
+    }
     function renderMenu() {
       const container = document.getElementById('menu');
-      const todayIndex = getTodayIndex();
-      const daysHtml = menu.map((day, index) => {
-        const isToday = index === todayIndex;
-        const itemClass = [
-          'day-item',
-          day.restaurant ? 'restaurant' : '',
-          isToday ? 'today' : ''
-        ].filter(Boolean).join(' ');
-        const todayBadge = isToday ? '<span class="today-badge">Сёння</span>' : '';
-        const ingredientsHtml = day.ingredients.length
-          ? `<ul>${day.ingredients.map(i => {
-              const label = i.label || products[i.product]?.name || '';
-              return `<li data-product="${i.product}">${label}</li>`;
-            }).join('')}</ul>`
-          : '';
-        const juiceHtml = day.juice
-          ? `<p class="juice-note">+ ${products[day.juice.product]?.name.toLowerCase() || 'апельсінавы сок'} (${day.juice.qty * 1000} мл — па ${day.juice.qty * 1000 / 2} мл на чалавека)</p>`
-          : '';
-        return `
-          <div class="${itemClass}">
-            <details${isToday ? ' open' : ''}>
-              <summary>
-                <div class="summary-text">
-                  <div class="day-label">${day.day}${todayBadge}</div>
-                  <h2>${day.title}</h2>
-                </div>
-                <span class="chevron" aria-hidden="true"></span>
-              </summary>
-              <div class="day-card-body">
-                <p class="desc">${day.desc}</p>
-                ${ingredientsHtml}
-                ${juiceHtml}
-              </div>
-            </details>
-          </div>
-        `;
+      const months = ['студзеня', 'лютага', 'сакавіка', 'красавіка', 'мая', 'чэрвеня', 'ліпеня', 'жніўня', 'верасня', 'кастрычніка', 'лістапада', 'снежня'];
+      const formatter = { format: date => `${date.getDate()} ${months[date.getMonth()]}` };
+      document.getElementById('dateRange').textContent = `${formatter.format(dates[0])} — ${formatter.format(dates[6])}`;
+      container.innerHTML = dates.map((date,index) => {
+        const key = dateKey(date);
+        return `<article class="calendar-day${index === 0 ? ' today' : ''}" data-date="${key}">
+          <h3 class="calendar-date"><span>${WEEKDAYS[weekday(date)]}${index === 0 ? '<span class="today-badge">Сёння</span>' : ''}</span><time datetime="${key}">${formatter.format(date)}</time></h3>
+          <div class="meal-grid">${['breakfast','dinner'].map(type => `<section class="meal-card" data-type="${type}">${mealHtml(key,type,index === 0)}</section>`).join('')}</div>
+        </article>`;
       }).join('');
-      container.innerHTML = `<article class="menu-card">${daysHtml}</article>`;
+      bindImageErrors(container);
     }
-
-    function getCheckedState() {
-      try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-      } catch {
-        return {};
+    const menuElement = document.getElementById('menu');
+    function stepMeal(picker, step) {
+      const { date, meal } = picker.dataset;
+      const options = choices[meal];
+      const index = options.findIndex(r => r.id === assignments[date][meal]);
+      const next = options[(index + step + options.length) % options.length];
+      const card = picker.closest('.meal-card');
+      const active = document.activeElement;
+      const restoreFocus = picker.contains(active)
+        ? (active.dataset.step ? `[data-step="${active.dataset.step}"]` : '.meal-viewport') : null;
+      assignments[date][meal] = next.id;
+      writeStorage(PLAN_KEY, assignments);
+      card.style.setProperty('--enter-x', step > 0 ? '24px' : '-24px');
+      card.classList.add('switching');
+      card.innerHTML = mealHtml(date, meal, true);
+      bindImageErrors(card);
+      if (restoreFocus) card.querySelector(restoreFocus).focus({ preventScroll: true });
+      document.getElementById('mealAnnouncement').textContent =
+        `${date}, ${meal === 'breakfast' ? 'сняданак' : 'вячэра'}: ${next.title}. ${options.indexOf(next) + 1} з ${options.length}.`;
+      reconcileShopping();
+      renderShopping();
+    }
+    menuElement.addEventListener('click', event => {
+      const button = event.target.closest('button[data-step]');
+      if (button) stepMeal(button.closest('.meal-picker'), Number(button.dataset.step));
+    });
+    menuElement.addEventListener('keydown', event => {
+      if (!event.target.matches('.meal-viewport')) return;
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      stepMeal(event.target.closest('.meal-picker'), event.key === 'ArrowRight' ? 1 : -1);
+    });
+    // Keep vertical scrolling and pinch zoom native; commit only deliberate horizontal swipes.
+    let swipe = null;
+    function cancelSwipe() {
+      if (!swipe) return;
+      const { viewport, id } = swipe;
+      swipe = null;
+      viewport.classList.remove('dragging');
+      viewport.style.removeProperty('--drag-x');
+      if (viewport.hasPointerCapture(id)) viewport.releasePointerCapture(id);
+    }
+    menuElement.addEventListener('pointerdown', event => {
+      if (!event.isPrimary) { cancelSwipe(); return; }
+      const viewport = event.target.closest('.meal-viewport');
+      if (!viewport || event.button !== 0) return;
+      cancelSwipe();
+      swipe = { viewport, id: event.pointerId, x: event.clientX, y: event.clientY, horizontal: false };
+      viewport.setPointerCapture(event.pointerId);
+    });
+    menuElement.addEventListener('pointermove', event => {
+      if (!swipe || swipe.id !== event.pointerId) return;
+      const dx = event.clientX - swipe.x, dy = event.clientY - swipe.y;
+      if (!swipe.horizontal) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) < 12) return;
+        if (Math.abs(dx) <= Math.abs(dy) * 1.3) { cancelSwipe(); return; }
+        swipe.horizontal = true;
+        swipe.viewport.classList.add('dragging');
       }
+      swipe.viewport.style.setProperty('--drag-x', `${Math.max(-70, Math.min(70, dx * .4))}px`);
+    });
+    menuElement.addEventListener('pointerup', event => {
+      if (!swipe || swipe.id !== event.pointerId) return;
+      const { viewport, x, y, horizontal } = swipe;
+      const dx = event.clientX - x, dy = event.clientY - y;
+      const threshold = Math.max(45, Math.min(80, viewport.clientWidth * .2));
+      const commit = horizontal && Math.abs(dx) >= threshold && Math.abs(dx) > Math.abs(dy) * 1.3;
+      cancelSwipe();
+      if (commit && viewport.isConnected) stepMeal(viewport.closest('.meal-picker'), dx < 0 ? 1 : -1);
+    });
+    menuElement.addEventListener('pointercancel', cancelSwipe);
+    menuElement.addEventListener('lostpointercapture', event => {
+      if (swipe?.id === event.pointerId) cancelSwipe();
+    });
+    let rolloverTimer;
+    function refreshDates() {
+      const next = weekDates();
+      if (dateKey(next[0]) !== dateKey(dates[0])) {
+        cancelSwipe();
+        dates = next;
+        normalizePlan();
+        reconcileShopping();
+        renderMenu();
+        renderShopping();
+      }
+      clearTimeout(rolloverTimer);
+      const now = new Date();
+      rolloverTimer = setTimeout(refreshDates, new Date(now.getFullYear(), now.getMonth(), now.getDate()+1).getTime() - now.getTime() + 100);
     }
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshDates(); });
+    window.addEventListener('focus', refreshDates);
 
+    function getCheckedState() { return { ...checkedState }; }
     function saveCheckedState(state) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      checkedState = state;
+      writeStorage(STORAGE_KEY, state);
     }
 
     function getTotalItemCount() {
@@ -989,7 +1140,7 @@
 
     function getDoneCount() {
       const state = getCheckedState();
-      return Object.values(state).filter(Boolean).length;
+      return shoppingList.flatMap(cat => cat.items).filter(item => state[`product-${item.id}`]).length;
     }
 
     function updateProgress() {
@@ -1213,7 +1364,7 @@
             <ul class="checklist">${itemsHtml}</ul>
           </div>
         `;
-      }).join('');
+      }).join('') || '<p class="empty-shopping">Усё запланавана! Прадукты купляць не трэба.</p>';
 
       updateProgress();
 
@@ -1235,6 +1386,7 @@
 
           spawnEmojiBurst(li.dataset.productId, li, 'check');
           animateCollapse(li, () => {
+            if (!li.isConnected) return;
             li.remove();
             maybeRemoveEmptyCategory(ul);
             pushUndoEntry({ id, li, checkbox: cb, catIdx, sortOrder, productId: li.dataset.productId });
@@ -1249,13 +1401,15 @@
     document.getElementById('resetBtn').addEventListener('click', () => {
       if (confirm('Скінуць усе адзнакі ў спісе пакупак?')) {
         hideSnackbar();
-        localStorage.removeItem(STORAGE_KEY);
+        saveCheckedState({});
         renderShopping();
       }
     });
 
+    reconcileShopping();
     renderMenu();
     renderShopping();
+    refreshDates();
   </script>
 </body>
 </html>

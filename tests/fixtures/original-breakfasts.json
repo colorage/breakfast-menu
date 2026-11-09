@@ -1,0 +1,297 @@
+[
+  {
+    "day": "Панядзелак",
+    "title": "Аўсянка з ягадамі",
+    "desc": "Цёплая аўсянка з бананам, ягадамі і арэхамі.",
+    "ingredients": [
+      {
+        "product": "oats",
+        "label": "1 склянка аўсяных круп",
+        "qty": 1,
+        "unit": "пачка"
+      },
+      {
+        "product": "milk",
+        "label": "2 склянкі малако (або раствор)",
+        "qty": 1,
+        "unit": "л"
+      },
+      {
+        "product": "bananas",
+        "label": "2 бананы",
+        "qty": 2,
+        "unit": "шт"
+      },
+      {
+        "product": "berries",
+        "label": "200 г ягад (свежых або замарожаных)",
+        "qty": 200,
+        "unit": "г"
+      },
+      {
+        "product": "honey",
+        "label": "4 ст. л. мёду"
+      },
+      {
+        "product": "walnuts",
+        "label": "4 ст. л. валошковых арэхаў"
+      },
+      {
+        "product": "spices",
+        "label": "1 ч. л. карыцы"
+      }
+    ],
+    "juice": {
+      "product": "orange_juice",
+      "qty": 0.4
+    }
+  },
+  {
+    "day": "Аўторак",
+    "title": "Амлет з гароднінай",
+    "desc": "Пышны амлет з шпінатам і сыром.",
+    "ingredients": [
+      {
+        "product": "eggs",
+        "label": "6 яек",
+        "qty": 6,
+        "unit": "шт"
+      },
+      {
+        "product": "spinach",
+        "label": "100 г шпінату",
+        "qty": 100,
+        "unit": "г"
+      },
+      {
+        "product": "hard_cheese",
+        "label": "100 г твёрдага сыру",
+        "qty": 100,
+        "unit": "г"
+      },
+      {
+        "product": "olive_oil",
+        "label": "2 ст. л. аліўкавага алею"
+      },
+      {
+        "product": "herbs",
+        "label": "2 гародніны (пятрушка, кроп)"
+      },
+      {
+        "product": "salt_pepper",
+        "label": "соль, перац"
+      }
+    ],
+    "juice": {
+      "product": "orange_juice",
+      "qty": 0.4
+    }
+  },
+  {
+    "day": "Серада",
+    "title": "Запеканка з тварагу",
+    "desc": "Пышная запеканка з тварагу са смятанай і мёдам — запякаецца ў духоўцы.",
+    "ingredients": [
+      {
+        "product": "cottage_cheese",
+        "label": "500 г тварагу (9%)",
+        "qty": 500,
+        "unit": "г"
+      },
+      {
+        "product": "eggs",
+        "label": "3 яйкі",
+        "qty": 3,
+        "unit": "шт"
+      },
+      {
+        "product": "flour",
+        "label": "4 ст. л. мукі"
+      },
+      {
+        "product": "sugar",
+        "label": "3 ст. л. цукру"
+      },
+      {
+        "product": "vanilla",
+        "label": "1 ч. л. ванілі"
+      },
+      {
+        "product": "sour_cream",
+        "label": "100 г смятаны",
+        "qty": 100,
+        "unit": "г"
+      },
+      {
+        "product": "honey",
+        "label": "2 ст. л. мёду"
+      },
+      {
+        "product": "olive_oil",
+        "label": "2 ст. л. аліўкавага алею (для змаствавання формы)"
+      }
+    ],
+    "juice": {
+      "product": "orange_juice",
+      "qty": 0.4
+    }
+  },
+  {
+    "day": "Чацвер",
+    "title": "Тосты з авакада",
+    "desc": "Хрумясты тост з авакада і яйкам-пашот.",
+    "ingredients": [
+      {
+        "product": "whole_grain_bread",
+        "label": "4 кавалкі цельназернавога хлеба",
+        "qty": 4,
+        "unit": "кавалкі"
+      },
+      {
+        "product": "avocado",
+        "label": "2 спелыя авакада",
+        "qty": 2,
+        "unit": "шт"
+      },
+      {
+        "product": "eggs",
+        "label": "4 яйкі",
+        "qty": 4,
+        "unit": "шт"
+      },
+      {
+        "product": "lemon",
+        "label": "2 ст. л. лімоннага соку",
+        "qty": 1,
+        "unit": "шт"
+      },
+      {
+        "product": "herbs",
+        "label": "2 гародніны (кроп, кінза)"
+      },
+      {
+        "product": "salt_pepper",
+        "label": "соль, чырвоны перец"
+      },
+      {
+        "product": "olive_oil",
+        "label": "2 ст. л. аліўкавага алею"
+      }
+    ],
+    "juice": {
+      "product": "orange_juice",
+      "qty": 0.4
+    }
+  },
+  {
+    "day": "Пятніца",
+    "title": "Ёгурт з гранолай",
+    "desc": "Грэцкі ёгурт з хрумястай гранолай, садавінай і насеннем.",
+    "ingredients": [
+      {
+        "product": "greek_yogurt",
+        "label": "400 г грэцкага ёгурту",
+        "qty": 400,
+        "unit": "г"
+      },
+      {
+        "product": "granola",
+        "label": "200 г гранолы",
+        "qty": 200,
+        "unit": "г"
+      },
+      {
+        "product": "apples",
+        "label": "2 яблыкі",
+        "qty": 2,
+        "unit": "шт"
+      },
+      {
+        "product": "pears",
+        "label": "2 грушы",
+        "qty": 2,
+        "unit": "шт"
+      },
+      {
+        "product": "flax_seeds",
+        "label": "4 ст. л. насення лёну",
+        "qty": 50,
+        "unit": "г"
+      },
+      {
+        "product": "honey",
+        "label": "4 ст. л. мёду"
+      },
+      {
+        "product": "cherries_berries",
+        "label": "100 г вішняў або ягод",
+        "qty": 100,
+        "unit": "г"
+      }
+    ],
+    "juice": {
+      "product": "orange_juice",
+      "qty": 0.4
+    }
+  },
+  {
+    "day": "Субота",
+    "title": "Рэстарацыя",
+    "desc": "Сняданак або брунч у рэстарацыі — адпачынак ад гатавання!",
+    "ingredients": [],
+    "restaurant": true
+  },
+  {
+    "day": "Нядзеля",
+    "title": "Шакшука",
+    "desc": "Яйкі ў тушанай памідоравай соўсе з перцам і лукам.",
+    "ingredients": [
+      {
+        "product": "eggs",
+        "label": "4 яйкі",
+        "qty": 4,
+        "unit": "шт"
+      },
+      {
+        "product": "tomatoes",
+        "label": "4 памідоры",
+        "qty": 4,
+        "unit": "шт"
+      },
+      {
+        "product": "red_pepper",
+        "label": "1 чырвоны перец",
+        "qty": 1,
+        "unit": "шт"
+      },
+      {
+        "product": "onion",
+        "label": "1 цыбуліна",
+        "qty": 1,
+        "unit": "шт"
+      },
+      {
+        "product": "garlic",
+        "label": "2 зубчыкі часнаку"
+      },
+      {
+        "product": "olive_oil",
+        "label": "2 ст. л. аліўкавага алею"
+      },
+      {
+        "product": "spices",
+        "label": "1 ч. л. папрыкі, кумін, соль"
+      },
+      {
+        "product": "whole_grain_bread",
+        "label": "4 кавалкі хлеба (цельназернавы або багет)",
+        "qty": 4,
+        "unit": "кавалкі"
+      }
+    ],
+    "juice": {
+      "product": "orange_juice",
+      "qty": 0.4
+    }
+  }
+]
